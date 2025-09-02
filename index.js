@@ -40,8 +40,28 @@ app.post('/whatsapp', async (req, res) => {
     const mensagem = req.body.Body.toLowerCase().trim();
     const twiml = new MessagingResponse();
 
-    // Verificação dos novos comandos
-    if (mensagem === 'ajuda') {
+    // Novo comando para DELETAR transação
+    if (mensagem.startsWith('deletar ')) {
+        const idTransacao = mensagem.replace('deletar ', '').trim();
+        try {
+            const { error } = await supabase
+                .from('transacoes')
+                .delete()
+                .eq('id', idTransacao); // Filtra a transação pelo ID
+
+            if (error) {
+                twiml.message(`Ops! Não consegui deletar a transação com ID: ${idTransacao}. Verifique o ID e tente novamente.`);
+                console.error('Erro ao deletar:', error);
+            } else {
+                twiml.message(`Transação com ID ${idTransacao} deletada com sucesso!`);
+            }
+        } catch (err) {
+            twiml.message('Ops! Algo deu errado no servidor ao tentar deletar.');
+            console.error('Erro geral:', err);
+        }
+    }
+    // Verificação dos novos comandos (existentes)
+    else if (mensagem === 'ajuda') {
         const mensagemAjuda = `
         Olá! Eu sou seu assistente financeiro. Aqui estão os comandos que você pode usar:
 
@@ -56,13 +76,16 @@ app.post('/whatsapp', async (req, res) => {
 
         * **Acessar o Dashboard:**
           - "dashboard"
+        
+        * **Deletar uma Transação:**
+          - "deletar <ID>"
 
         * **Obter Ajuda:**
           - "ajuda"
         `;
         twiml.message(mensagemAjuda);
     } else if (mensagem === 'dashboard') {
-        const dashboardUrl = 'https://dashboard-financeiro-six.vercel.app/'; // Use o link do seu dashboard no Vercel
+        const dashboardUrl = 'https://dashboard-financeiro-six.vercel.app/';
         twiml.message(`Acesse seu dashboard financeiro em: ${dashboardUrl}`);
     } else if (mensagem.startsWith('relatorio')) {
         let filtroDeTempo = '';
@@ -74,16 +97,14 @@ app.post('/whatsapp', async (req, res) => {
             filtroDeTempo = 'this_month';
         }
 
-        // Lógica de consulta ao banco de dados com base no filtro de tempo
         let queryDate;
         let resumo = '';
 
         try {
-            // Lógica para filtrar por data (exemplo simplificado)
             const { data, error } = await supabase
                 .from('transacoes')
                 .select('*')
-                .gte('data', new Date(new Date() - 86400000).toISOString()); // Exemplo de filtro (últimas 24h)
+                .gte('data', new Date(new Date() - 86400000).toISOString());
 
             const totalReceita = data.filter(t => t.tipo === 'receita').reduce((sum, t) => sum + t.valor, 0);
             const totalDespesa = data.filter(t => t.tipo === 'despesa').reduce((sum, t) => sum + t.valor, 0);
@@ -97,7 +118,6 @@ app.post('/whatsapp', async (req, res) => {
         }
 
     } else {
-        // Lógica para registrar transações
         const dados = extrairDados(mensagem);
         if (dados) {
             try {
@@ -128,7 +148,6 @@ app.post('/whatsapp', async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/xml' });
     res.end(twiml.toString());
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

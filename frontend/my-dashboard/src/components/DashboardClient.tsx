@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { Transacao } from '@/types';
 import StatCard from './StatCard';
 import SearchFilter from './SearchFilter';
+import { supabase } from '../lib/supabaseClient'; // Importe o cliente do Supabase
 
 const PieChart = dynamic(() => import('./PieChart'), { ssr: false });
 const LineChart = dynamic(() => import('./LineChart'), { ssr: false });
@@ -27,6 +28,24 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
     setFilteredData(transacoes);
   }, [transacoes]);
 
+  // Função para deletar uma transação
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja deletar esta transação?')) {
+      const { error } = await supabase
+        .from('transacoes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Ocorreu um erro ao deletar a transação: ' + error.message);
+      } else {
+        alert('Transação deletada com sucesso!');
+        // Atualiza a página para recarregar os dados
+        window.location.reload();
+      }
+    }
+  };
+  
   // Estatísticas calculadas
   const stats = useMemo(() => {
     const receitas = filteredData.filter(t => t.tipo === 'receita');
@@ -214,7 +233,7 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex items-center space-x-4">
                   <span
                     className={`text-lg font-bold ${
                       transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
@@ -222,6 +241,17 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
                   >
                     {transacao.tipo === 'receita' ? '+' : '-'}R$ {transacao.valor.toFixed(2)}
                   </span>
+                  
+                  {/* Botão de lixeira para deletar */}
+                  <button
+                    onClick={() => handleDelete(transacao.id)}
+                    className="p-2 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Deletar transação"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}

@@ -64,9 +64,9 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
           <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl">
             <p className="font-medium mb-2">Como usar:</p>
             <div className="text-sm space-y-1">
-              <p>• "mercado 50" - Registrar despesa</p>
-              <p>• "ganhei 500 freela" - Registrar receita</p>
-              <p>• "dashboard" - Ver relatórios</p>
+              <p>• &quot;mercado 50&quot; - Registrar despesa</p>
+              <p>• &quot;ganhei 500 freela&quot; - Registrar receita</p>
+              <p>• &quot;dashboard&quot; - Ver relatórios</p>
             </div>
           </div>
         </div>

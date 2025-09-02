@@ -57,7 +57,7 @@ export default function SearchFilter({
     // Filtro por período
     if (dateRange !== 'all') {
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       switch (dateRange) {
         case 'today':
@@ -174,7 +174,7 @@ export default function SearchFilter({
         <div className="mt-4 flex flex-wrap gap-2">
           {searchTerm && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-              Busca: "{searchTerm}"
+              Busca: &quot;{searchTerm}&quot;
               <button
                 onClick={() => setSearchTerm('')}
                 className="ml-2 text-blue-600 hover:text-blue-800"

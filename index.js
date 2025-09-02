@@ -40,9 +40,29 @@ app.post('/whatsapp', async (req, res) => {
     const mensagem = req.body.Body.toLowerCase().trim();
     const twiml = new MessagingResponse();
 
-    // Comandos de informação
-    if (mensagem === 'dashboard') {
-        const dashboardUrl = 'SUA_URL_DO_DASHBOARD_NO_VERCEL'; // Substitua pelo seu link do Vercel
+    // Verificação dos novos comandos
+    if (mensagem === 'ajuda') {
+        const mensagemAjuda = `
+        Olá! Eu sou seu assistente financeiro. Aqui estão os comandos que você pode usar:
+
+        * **Registrar Transação:**
+          - Despesa: "despesa 50 mercado" ou "mercado 50"
+          - Receita: "ganhei 300 freela" ou "salario 1500"
+
+        * **Consultar Relatórios:**
+          - "relatorio de hoje"
+          - "relatorio da semana"
+          - "relatorio do mes"
+
+        * **Acessar o Dashboard:**
+          - "dashboard"
+
+        * **Obter Ajuda:**
+          - "ajuda"
+        `;
+        twiml.message(mensagemAjuda);
+    } else if (mensagem === 'dashboard') {
+        const dashboardUrl = 'https://dashboard-financeiro-six.vercel.app/'; // Use o link do seu dashboard no Vercel
         twiml.message(`Acesse seu dashboard financeiro em: ${dashboardUrl}`);
     } else if (mensagem.startsWith('relatorio')) {
         let filtroDeTempo = '';

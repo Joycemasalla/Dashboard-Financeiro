@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Transacao } from '@/types';
 import StatCard from './StatCard';
 import SearchFilter from './SearchFilter';
-import { supabase } from '../lib/supabaseClient'; // Importe o cliente do Supabase
+import { supabase } from '../lib/supabaseClient';
 
 const PieChart = dynamic(() => import('./PieChart'), { ssr: false });
 const LineChart = dynamic(() => import('./LineChart'), { ssr: false });
@@ -22,6 +22,7 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [dateRange, setDateRange] = useState('all');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setData(transacoes);
@@ -31,6 +32,7 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
   // Função para deletar uma transação
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja deletar esta transação?')) {
+      setLoading(true);
       const { error } = await supabase
         .from('transacoes')
         .delete()
@@ -39,10 +41,18 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
       if (error) {
         alert('Ocorreu um erro ao deletar a transação: ' + error.message);
       } else {
-        alert('Transação deletada com sucesso!');
-        // Atualiza a página para recarregar os dados
-        window.location.reload();
+        // Mostra feedback de sucesso
+        const successDiv = document.createElement('div');
+        successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        successDiv.textContent = 'Transação deletada com sucesso!';
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+          document.body.removeChild(successDiv);
+          window.location.reload();
+        }, 2000);
       }
+      setLoading(false);
     }
   };
   
@@ -71,21 +81,73 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="max-w-md mx-auto">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="text-center py-20">
+        <div className="max-w-lg mx-auto">
+          {/* Ícone animado */}
+          <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-glow float-animation">
+            <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhuma transação encontrada</h3>
-          <p className="text-gray-600 mb-6">Envie uma mensagem no WhatsApp para começar a registrar suas transações!</p>
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl">
-            <p className="font-medium mb-2">Como usar:</p>
-            <div className="text-sm space-y-1">
-              <p>• &quot;mercado 50&quot; - Registrar despesa</p>
-              <p>• &quot;ganhei 500 freela&quot; - Registrar receita</p>
-              <p>• &quot;dashboard&quot; - Ver relatórios</p>
+          <h3 className="text-2xl font-bold text-white mb-4">Bem-vindo ao seu Dashboard!</h3>
+          <p className="text-gray-300 mb-8 text-lg leading-relaxed">Comece registrando suas transações via WhatsApp para visualizar seus dados financeiros aqui.</p>
+          
+          {/* Card de instruções melhorado */}
+          <div className="card-glass p-8 rounded-3xl shadow-glow">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-success">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.106"/>
+                </svg>
+              </div>
+            </div>
+            <h4 className="text-xl font-bold text-white mb-4">Como usar:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center mt-0.5">
+                    <span className="text-red-400 font-bold text-sm">💸</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">"mercado 50"</p>
+                    <p className="text-gray-400 text-sm">Registrar despesa</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center mt-0.5">
+                    <span className="text-green-400 font-bold text-sm">💰</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">"ganhei 500 freela"</p>
+                    <p className="text-gray-400 text-sm">Registrar receita</p>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mt-0.5">
+                    <span className="text-blue-400 font-bold text-sm">📊</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">"dashboard"</p>
+                    <p className="text-gray-400 text-sm">Ver relatórios</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mt-0.5">
+                    <span className="text-purple-400 font-bold text-sm">❓</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">"ajuda"</p>
+                    <p className="text-gray-400 text-sm">Ver todos os comandos</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 pt-6 border-t border-gray-700">
+              <p className="text-gray-400 text-sm">
+                💡 <strong>Dica:</strong> Use comandos naturais como "compras 120" ou "salario 2000"
+              </p>
             </div>
           </div>
         </div>
@@ -96,7 +158,7 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
   return (
     <div className="space-y-8">
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           title="Receitas"
           value={`R$ ${stats.totalReceitas.toFixed(2)}`}
@@ -143,109 +205,134 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
       />
 
       {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Gráfico de Pizza */}
-        <div className="card-glass rounded-2xl p-6 shadow-soft">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            Gastos por Categoria
-          </h2>
-          <div className="h-64">
+        <div className="card-glass rounded-3xl p-6 shadow-soft hover:shadow-glow transition-all duration-500">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-glow">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              Gastos por Categoria
+            </h2>
+            <div className="w-3 h-3 bg-purple-500 rounded-full pulse-custom"></div>
+          </div>
+          <div className="h-80">
             <PieChart data={filteredData} />
           </div>
         </div>
 
         {/* Gráfico de Linha */}
-        <div className="card-glass rounded-2xl p-6 shadow-soft">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4" />
-              </svg>
-            </div>
-            Evolução Temporal
-          </h2>
-          <div className="h-64">
+        <div className="card-glass rounded-3xl p-6 shadow-soft hover:shadow-glow transition-all duration-500">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mr-3 shadow-glow">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4" />
+                </svg>
+              </div>
+              Evolução Temporal
+            </h2>
+            <div className="w-3 h-3 bg-blue-500 rounded-full pulse-custom"></div>
+          </div>
+          <div className="h-80">
             <LineChart data={filteredData} />
           </div>
         </div>
       </div>
 
       {/* Lista de Transações */}
-      <div className="card-glass rounded-2xl p-6 shadow-soft">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-3">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
+      <div className="card-glass rounded-3xl p-6 shadow-soft">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-xl font-bold text-white flex items-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-3 shadow-glow">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            Transações Recentes
+          </h2>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full pulse-custom"></div>
+            <span className="text-gray-400 text-sm font-medium">
+              {filteredData.length} {filteredData.length === 1 ? 'item' : 'itens'}
+            </span>
           </div>
-          Últimas Transações ({filteredData.length})
-        </h2>
+        </div>
 
         {filteredData.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Nenhuma transação encontrada com os filtros aplicados.</p>
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">Nenhuma transação encontrada</h3>
+            <p className="text-gray-400">Nenhuma transação encontrada com os filtros aplicados.</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
             {filteredData.slice(0, 50).map((transacao: Transacao) => (
               <div
                 key={transacao.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                className="group flex items-center justify-between p-5 bg-gray-800/40 backdrop-blur-sm rounded-2xl hover:bg-gray-800/60 transition-all duration-300 border border-gray-700/50 hover:border-gray-600/50"
               >
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 flex-1">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${
                       transacao.tipo === 'receita'
-                        ? 'bg-green-100 text-green-600'
-                        : 'bg-red-100 text-red-600'
+                        ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-success'
+                        : 'bg-gradient-to-br from-red-500 to-pink-600 shadow-danger'
                     }`}
                   >
                     {transacao.tipo === 'receita' ? (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                       </svg>
                     ) : (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                       </svg>
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-3 mb-2">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                           transacao.tipo === 'receita'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
                         }`}
                       >
                         {transacao.tipo === 'receita' ? 'Receita' : 'Despesa'}
                       </span>
                     </div>
-                    <p className="font-medium text-gray-900 mt-1">{transacao.categoria}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-semibold text-white text-lg truncate capitalize">{transacao.categoria}</p>
+                    <p className="text-sm text-gray-400 flex items-center mt-1">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
                       {new Date(transacao.data).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                 </div>
+                
                 <div className="text-right flex items-center space-x-4">
                   <span
-                    className={`text-lg font-bold ${
-                      transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
+                    className={`text-xl font-bold ${
+                      transacao.tipo === 'receita' ? 'text-green-400' : 'text-red-400'
                     }`}
                   >
                     {transacao.tipo === 'receita' ? '+' : '-'}R$ {transacao.valor.toFixed(2)}
                   </span>
                   
-                  {/* Botão de lixeira para deletar */}
+                  {/* Botão de lixeira melhorado */}
                   <button
                     onClick={() => handleDelete(transacao.id)}
-                    className="p-2 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    disabled={loading}
+                    className="p-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-red-500/30"
                     title="Deletar transação"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

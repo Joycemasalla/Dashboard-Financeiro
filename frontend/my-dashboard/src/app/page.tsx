@@ -42,9 +42,7 @@ export default async function DashboardPage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 Dashboard Financeiro
               </h1>
-              <p className="text-blue-100 text-lg">
-                Gerencie suas finanças de forma inteligente
-              </p>
+            
             </div>
             <div className="hidden md:block">
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -65,7 +63,7 @@ export default async function DashboardPage() {
       {/* WhatsApp Float Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <a
-          href="https://wa.me/5532988949994" // Substitua pelo seu número
+          href="https://wa.me/+14155238886" // telefone twilio
           target="_blank"
           rel="noopener noreferrer"
           className="w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"

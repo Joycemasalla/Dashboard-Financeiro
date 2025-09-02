@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
+  --background: #15181b;
   --foreground: #1e293b;
   --primary: #3b82f6;
   --primary-dark: #2563eb;
@@ -73,7 +73,7 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .card-glass {
-    background: rgba(30, 41, 59, 0.95);
+    background: rgba(56, 68, 87, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }

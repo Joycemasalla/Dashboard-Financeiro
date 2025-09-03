@@ -66,7 +66,6 @@ function extrairDados(texto) {
 app.post('/whatsapp', async (req, res) => {
     const mensagem = req.body.Body;
     const from = req.body.From;
-    // --- NOVO: Extrai o ID do usuário (número de telefone) do remetente
     const userId = from.split(':')[1];
     const mensagemNormal = normalizarTexto(mensagem);
     const twiml = new MessagingResponse();
@@ -77,9 +76,8 @@ app.post('/whatsapp', async (req, res) => {
             const { data, error } = await supabase
                 .from('transacoes')
                 .select('id, descricao, valor, tipo')
-                // --- NOVO: Adiciona filtro por user_id
                 .eq('user_id', userId)
-                .order('created_at', { ascending: false })
+                .order('data', { ascending: false }) // CORRIGIDO: Usando 'data'
                 .limit(1);
 
             if (error || !data || data.length === 0) {
@@ -120,7 +118,6 @@ app.post('/whatsapp', async (req, res) => {
         
         // COMANDO: Dashboard
         else if (mensagemNormal.includes('dashboard')) {
-            // --- NOVO: Inclui o user_id como parâmetro na URL
             const dashboardUrl = `https://dashboard-financeiro-six.vercel.app/?user_id=${userId}`;
             twiml.message(`🌐 *Dashboard Financeiro*\n\nAcesse: ${dashboardUrl}\n\n📱 Melhor visualização no celular!`);
         }
@@ -143,17 +140,16 @@ app.post('/whatsapp', async (req, res) => {
                 dataInicio.setMonth(dataInicio.getMonth() - 1);
                 filtroTempo = 'último mês';
             } else {
-                dataInicio.setMonth(dataInicio.getMonth() - 3); // Últimos 3 meses por padrão
+                dataInicio.setMonth(dataInicio.getMonth() - 3);
                 filtroTempo = 'últimos 3 meses';
             }
 
             const { data, error } = await supabase
                 .from('transacoes')
                 .select('*')
-                // --- NOVO: Adiciona filtro por user_id
                 .eq('user_id', userId)
-                .gte('created_at', dataInicio.toISOString())
-                .order('created_at', { ascending: false });
+                .gte('data', dataInicio.toISOString()) // CORRIGIDO: Usando 'data'
+                .order('data', { ascending: false }); // CORRIGIDO: Usando 'data'
 
             if (error) {
                 console.error('Erro ao buscar transações:', error);
@@ -198,7 +194,6 @@ app.post('/whatsapp', async (req, res) => {
                         categoria: dados.categoria,
                         tipo: dados.tipo,
                         descricao: dados.descricao,
-                        // --- NOVO: Adiciona o user_id no insert
                         user_id: userId
                     }]);
 

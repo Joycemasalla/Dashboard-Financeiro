@@ -13,7 +13,6 @@ const LineChart = dynamic(() => import('./LineChart'), { ssr: false });
 
 type DashboardClientProps = {
   transacoes: Transacao[];
-  // --- NOVO: Adiciona user_id como prop
   userId: string;
 };
 
@@ -25,29 +24,64 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
   const [selectedType, setSelectedType] = useState('');
   const [dateRange, setDateRange] = useState('all');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setData(transacoes);
     setFilteredData(transacoes);
   }, [transacoes]);
 
+  // Função para recarregar dados do Supabase
+  const reloadData = async () => {
+    setLoading(true);
+    try {
+      const { data: novasTransacoes, error } = await supabase
+        .from('transacoes')
+        .select('*')
+        .eq('user_id', userId)
+        .order('data', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao recarregar dados:', error);
+        alert('Erro ao recarregar dados: ' + error.message);
+      } else {
+        const transacoesArray = Array.isArray(novasTransacoes) ? novasTransacoes : [];
+        setData(transacoesArray);
+        setFilteredData(transacoesArray);
+      }
+    } catch (error) {
+      console.error('Erro ao conectar com Supabase:', error);
+      alert('Erro de conexão com o banco de dados');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Função para deletar uma transação
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja deletar esta transação?')) {
       setIsDeleting(id);
-      const { error } = await supabase
-        .from('transacoes')
-        .delete()
-        // --- NOVO: Adiciona o user_id para filtrar o delete
-        .eq('user_id', userId)
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('transacoes')
+          .delete()
+          .eq('user_id', userId)
+          .eq('id', id);
 
-      if (error) {
-        alert('Ocorreu um erro ao deletar a transação: ' + error.message);
-      } else {
-        window.location.reload();
+        if (error) {
+          console.error('Erro ao deletar:', error);
+          alert('Ocorreu um erro ao deletar a transação: ' + error.message);
+        } else {
+          // Atualizar dados localmente sem recarregar a página
+          await reloadData();
+          alert('Transação deletada com sucesso!');
+        }
+      } catch (error) {
+        console.error('Erro na conexão:', error);
+        alert('Erro de conexão ao deletar transação');
+      } finally {
+        setIsDeleting(null);
       }
-      setIsDeleting(null);
     }
   };
   
@@ -85,20 +119,38 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Nenhuma transação encontrada</h3>
           <p className="text-gray-400 mb-6">Envie uma mensagem no WhatsApp para começar a registrar suas transações!</p>
+          
+          {/* Botão para recarregar dados */}
+          <button 
+            onClick={reloadData}
+            disabled={loading}
+            className="btn-primary mb-6 disabled:opacity-50"
+          >
+            {loading ? 'Carregando...' : 'Recarregar Dados'}
+          </button>
+
           <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl border border-green-500/30">
             <p className="font-semibold mb-3 text-lg">Como usar:</p>
             <div className="text-sm space-y-2 text-left">
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;mercado 50&quot;</code> - Registrar despesa</p>
+                <p><code className="bg-white/20 px-2 py-1 rounded">"50 mercado"</code> - Registrar despesa</p>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;ganhei 500 freela&quot;</code> - Registrar receita</p>
+                <p><code className="bg-white/20 px-2 py-1 rounded">"100 gasolina"</code> - Combustível</p>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;dashboard&quot;</code> - Ver relatórios</p>
+                <p><code className="bg-white/20 px-2 py-1 rounded">"30 farmácia"</code> - Medicamentos</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 bg-white rounded-full"></span>
+                <p><code className="bg-white/20 px-2 py-1 rounded">"ganhei 500 freela"</code> - Receita</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 bg-white rounded-full"></span>
+                <p><code className="bg-white/20 px-2 py-1 rounded">"listar"</code> - Ver transações</p>
               </div>
             </div>
           </div>
@@ -109,6 +161,30 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
 
   return (
     <div className="space-y-6">
+      {/* Header com botão de recarregar */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <h2 className="text-2xl font-bold text-white">Dashboard Financeiro</h2>
+          <span className="text-sm text-gray-400">({data.length} transações)</span>
+        </div>
+        <button 
+          onClick={reloadData}
+          disabled={loading}
+          className="btn-primary text-sm px-4 py-2 disabled:opacity-50"
+        >
+          {loading ? (
+            <svg className="w-4 h-4 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          )}
+          Atualizar
+        </button>
+      </div>
+
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -206,7 +282,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
           </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto">
-            {filteredData.slice(0, 50).map((transacao: Transacao) => (
+            {filteredData.slice(0, 50).map((transacao: Transacao, index: number) => (
               <div
                 key={transacao.id}
                 className="transaction-item flex items-center justify-between p-4 bg-gray-800/50 rounded-xl hover:bg-gray-700/50 transition-all duration-200"
@@ -240,10 +316,14 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
                       >
                         {transacao.tipo === 'receita' ? 'Receita' : 'Despesa'}
                       </span>
+                      <span className="text-xs text-gray-500">#{index + 1}</span>
                     </div>
                     <p className="font-medium text-white">{transacao.categoria}</p>
                     <p className="text-sm text-gray-400">
-                      {new Date(transacao.data).toLocaleDateString('pt-BR')}
+                      {new Date(transacao.data).toLocaleDateString('pt-BR')} às {new Date(transacao.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate max-w-48">
+                      ID: {transacao.id.substring(0, 8)}...
                     </p>
                   </div>
                 </div>
@@ -261,7 +341,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
                     onClick={() => handleDelete(transacao.id)}
                     disabled={isDeleting === transacao.id}
                     className={`delete-btn ${isDeleting === transacao.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title="Deletar transação"
+                    title={`Deletar transação #${index + 1}`}
                   >
                     {isDeleting === transacao.id ? (
                       <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,6 +356,14 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
                 </div>
               </div>
             ))}
+            
+            {filteredData.length > 50 && (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">
+                  Mostrando 50 de {filteredData.length} transações
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -25,7 +25,7 @@ function extrairDados(texto) {
     
     // Palavras que indicam RECEITA
     const palavrasReceita = [
-        'receita', 'ganhei', 'ganho', 'recebi', 'recebo', 'salario', 'salary', 
+        'receita', 'ganhei', 'ganho', 'recebi', 'recebo', 'salario', 'salário', 
         'freelance', 'freela', 'trabalho', 'pagamento', 'pago', 'renda', 
         'bonus', 'comissao', 'venda', 'vendi'
     ];

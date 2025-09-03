@@ -70,7 +70,7 @@ app.post('/whatsapp', async (req, res) => {
                 .from('transacoes')
                 .select('id, descricao, valor, tipo')
                 .eq('user_id', userId)
-                .order('data', { ascending: false }) // Corrigido
+                .order('data', { ascending: false })
                 .limit(1);
 
             if (error || !data || data.length === 0) {
@@ -133,8 +133,8 @@ app.post('/whatsapp', async (req, res) => {
                 .from('transacoes')
                 .select('*')
                 .eq('user_id', userId)
-                .gte('data', dataInicio.toISOString()) // Corrigido
-                .order('data', { ascending: false }); // Corrigido
+                .gte('data', dataInicio.toISOString())
+                .order('data', { ascending: false });
 
             if (error) {
                 console.error('Erro ao buscar transações:', error);

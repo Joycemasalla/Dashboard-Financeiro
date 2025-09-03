@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,9 +17,16 @@ export const metadata: Metadata = {
   description: "Dashboard financeiro inteligente que permite gerenciar receitas e despesas através do WhatsApp de forma simples e eficiente.",
   keywords: ["dashboard", "financeiro", "whatsapp", "receitas", "despesas", "finanças"],
   authors: [{ name: "Dashboard Financeiro" }],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-  themeColor: "#0c0c0c",
 };
+
+// --- NOVO: 'viewport' e 'themeColor' movidos para uma export separada
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#0c0c0c",
+}
 
 export default function RootLayout({
   children,

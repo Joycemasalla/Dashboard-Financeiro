@@ -4,12 +4,15 @@ import DashboardClient from '../components/DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
+// ✅ CORREÇÃO: searchParams agora é uma Promise no Next.js 15
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const userId = searchParams?.user_id as string | undefined;
+  // ✅ CORREÇÃO: Aguardar a resolução da Promise
+  const resolvedSearchParams = await searchParams;
+  const userId = resolvedSearchParams?.user_id as string | undefined;
 
   if (!userId) {
     return (

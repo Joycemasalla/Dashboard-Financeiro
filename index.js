@@ -10,11 +10,6 @@ const supabaseUrl = 'https://gaptsfozqyybssxxmedj.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcHRzZm96cXl5YnNzeHhtZWRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MzA2ODIsImV4cCI6MjA3MjQwNjY4Mn0.0iun-arhyO0Ntxm4xj7GASFdlbvJcLdEWS9aTyeM5jw';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Adicionei uma etapa manual que você deve fazer no seu banco de dados
-// 1. Vá para o Supabase Dashboard.
-// 2. Na tabela 'transacoes', adicione uma nova coluna chamada 'user_id' do tipo 'text'.
-// 3. Marque a coluna como 'Not Null' (não nula) e salve as alterações.
-
 // Função normalizar texto (remove acentos e converte para minúsculo)
 function normalizarTexto(texto) {
     return texto

@@ -1,15 +1,16 @@
 // src/app/page.tsx
 import { supabase } from '../lib/supabaseClient';
 import DashboardClient from '../components/DashboardClient';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { user_id: string | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const userId = searchParams.user_id;
+  const userId = searchParams?.user_id as string | undefined;
 
   if (!userId) {
     return (

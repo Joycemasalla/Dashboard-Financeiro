@@ -4,11 +4,13 @@ import DashboardClient from '../components/DashboardClient';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function DashboardPage({ searchParams }: PageProps) {
-  const userId = searchParams?.user_id as string | undefined;
+  // Aguardar a resolução da Promise do searchParams
+  const resolvedSearchParams = await searchParams;
+  const userId = resolvedSearchParams?.user_id as string | undefined;
 
   if (!userId) {
     return (

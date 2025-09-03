@@ -14,6 +14,13 @@ export default async function DashboardPage({
   const resolvedSearchParams = await searchParams;
   const userId = resolvedSearchParams?.user_id as string | undefined;
 
+  // --- ALTERAÇÃO AQUI ---
+  // Definição da mensagem e do número do WhatsApp para o link
+  const twilioNumber = "+14155238886";
+  const prefilledMessage = "join machine-indeed";
+  const whatsappLink = `https://wa.me/${twilioNumber}?text=${encodeURIComponent(prefilledMessage)}`;
+  // -------------------------
+
   if (!userId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4 text-center">
@@ -23,7 +30,8 @@ export default async function DashboardPage({
             Por favor, acesse o dashboard através do link enviado pelo WhatsApp.
           </p>
           <a
-            href="https://wa.me/+14155238886" // Substitua pelo seu número de Twilio
+            // --- ALTERAÇÃO AQUI: O href agora usa a variável 'whatsappLink' ---
+            href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary"
@@ -113,7 +121,8 @@ export default async function DashboardPage({
       {/* WhatsApp Float Button aprimorado */}
       <div className="fixed bottom-6 right-6 z-50">
         <a
-          href="https://wa.me/+14155238886"
+          // --- ALTERAÇÃO AQUI: O href agora usa a variável 'whatsappLink' ---
+          href={whatsappLink}
           target="_blank"
           rel="noopener noreferrer"
           className="whatsapp-btn w-14 h-14 flex items-center justify-center text-white transform hover:scale-110 transition-all duration-300"

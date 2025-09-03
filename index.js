@@ -19,39 +19,33 @@ function normalizarTexto(texto) {
         .trim();
 }
 
-// Função extrair dados MUITO mais flexível
+// Função extrair dados mais flexível
 function extrairDados(texto) {
     const textoNormal = normalizarTexto(texto);
     
-    // Palavras que indicam RECEITA
     const palavrasReceita = [
         'receita', 'ganhei', 'ganho', 'recebi', 'recebo', 'salario', 'salário', 
         'freelance', 'freela', 'trabalho', 'pagamento', 'pago', 'renda', 
         'bonus', 'comissao', 'venda', 'vendi'
     ];
     
-    // Se contém palavra de receita, é receita
     const ehReceita = palavrasReceita.some(palavra => textoNormal.includes(palavra));
     
-    // Extrair número (aceita vírgula e ponto)
     const numeroMatch = textoNormal.match(/(\d+(?:[.,]\d+)?)/);
     if (!numeroMatch) return null;
     
     const valor = parseFloat(numeroMatch[1].replace(',', '.'));
     if (isNaN(valor) || valor <= 0) return null;
     
-    // Remover o número e palavras de receita para pegar a categoria
     let categoria = textoNormal
-        .replace(/\d+(?:[.,]\d+)?/g, '') // Remove números
-        .replace(new RegExp(palavrasReceita.join('|'), 'g'), '') // Remove palavras de receita
+        .replace(/\d+(?:[.,]\d+)?/g, '')
+        .replace(new RegExp(palavrasReceita.join('|'), 'g'), '')
         .trim();
     
-    // Se categoria está vazia, usar uma padrão
     if (!categoria) {
         categoria = ehReceita ? 'receita' : 'despesa';
     }
     
-    // Limpar categoria
     categoria = categoria.replace(/\s+/g, ' ').trim() || (ehReceita ? 'receita' : 'despesa');
     
     return {
@@ -71,13 +65,12 @@ app.post('/whatsapp', async (req, res) => {
     const twiml = new MessagingResponse();
 
     try {
-        // COMANDO: Apagar último
         if (mensagemNormal.includes('apagar ultimo') || mensagemNormal.includes('deletar ultimo')) {
             const { data, error } = await supabase
                 .from('transacoes')
                 .select('id, descricao, valor, tipo')
                 .eq('user_id', userId)
-                .order('data', { ascending: false }) // CORRIGIDO: Usando 'data'
+                .order('data', { ascending: false }) // Corrigido
                 .limit(1);
 
             if (error || !data || data.length === 0) {
@@ -89,40 +82,32 @@ app.post('/whatsapp', async (req, res) => {
             }
         }
         
-        // COMANDO: Ajuda
         else if (mensagemNormal.includes('ajuda') || mensagemNormal.includes('help')) {
             const mensagemAjuda = `🤖 *Assistente Financeiro*
-
 📝 *Registrar gastos/receitas:*
 • "50 mercado"
 • "100 gasolina" 
 • "ganhei 500 freelance"
 • "salario 3000"
-
 📊 *Ver relatórios:*
 • "relatorio"
 • "saldo"
 • "hoje"
 • "semana"
 • "mes"
-
 🗑️ *Apagar:*
 • "apagar ultimo"
-
 🌐 *Dashboard:*
 • "dashboard"
-
 💡 Pode usar acentos e maiúsculas normalmente!`;
             twiml.message(mensagemAjuda);
         }
         
-        // COMANDO: Dashboard
         else if (mensagemNormal.includes('dashboard')) {
             const dashboardUrl = `https://dashboard-financeiro-six.vercel.app/?user_id=${userId}`;
             twiml.message(`🌐 *Dashboard Financeiro*\n\nAcesse: ${dashboardUrl}\n\n📱 Melhor visualização no celular!`);
         }
         
-        // COMANDO: Relatórios
         else if (mensagemNormal.includes('relatorio') || mensagemNormal.includes('saldo') || 
                   mensagemNormal.includes('hoje') || mensagemNormal.includes('semana') || 
                   mensagemNormal.includes('mes')) {
@@ -148,8 +133,8 @@ app.post('/whatsapp', async (req, res) => {
                 .from('transacoes')
                 .select('*')
                 .eq('user_id', userId)
-                .gte('data', dataInicio.toISOString()) // CORRIGIDO: Usando 'data'
-                .order('data', { ascending: false }); // CORRIGIDO: Usando 'data'
+                .gte('data', dataInicio.toISOString()) // Corrigido
+                .order('data', { ascending: false }); // Corrigido
 
             if (error) {
                 console.error('Erro ao buscar transações:', error);
@@ -168,7 +153,6 @@ app.post('/whatsapp', async (req, res) => {
                 resumo += `📉 Despesas: R$ ${totalDespesas.toFixed(2)}\n`;
                 resumo += `📝 Total de transações: ${data.length}`;
                 
-                // Últimas 5 transações
                 if (data.length > 0) {
                     resumo += `\n\n*Últimas transações:*`;
                     data.slice(0, 5).forEach(t => {
@@ -182,7 +166,6 @@ app.post('/whatsapp', async (req, res) => {
             }
         }
         
-        // REGISTRAR TRANSAÇÃO (padrão)
         else {
             const dados = extrairDados(mensagem);
             
@@ -207,13 +190,11 @@ app.post('/whatsapp', async (req, res) => {
                 }
             } else {
                 twiml.message(`❌ *Formato não reconhecido!*
-
 ✅ *Exemplos corretos:*
 • "50 mercado"
 • "100 gasolina"
 • "ganhei 500 freelance"
 • "salário 3000"
-
 💡 Digite *"ajuda"* para ver todos os comandos.`);
             }
         }

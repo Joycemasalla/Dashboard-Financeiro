@@ -1,4 +1,3 @@
-// src/app/page.tsx
 import { supabase } from '../lib/supabaseClient';
 import DashboardClient from '../components/DashboardClient';
 import { notFound } from 'next/navigation';
@@ -37,7 +36,7 @@ export default async function DashboardPage({
     .from('transacoes')
     .select('*')
     .eq('user_id', userId)
-    .order('data', { ascending: false }); // CORRIGIDO: Usando 'data'
+    .order('data', { ascending: false }); // Corrigido
 
   if (error) {
     return (

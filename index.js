@@ -19,14 +19,26 @@ function normalizarTexto(texto) {
         .trim();
 }
 
-// Função extrair dados mais flexível
+// Função extrair dados mais flexível com mais categorias
 function extrairDados(texto) {
     const textoNormal = normalizarTexto(texto);
     
     const palavrasReceita = [
         'receita', 'ganhei', 'ganho', 'recebi', 'recebo', 'salario', 'salário', 
         'freelance', 'freela', 'trabalho', 'pagamento', 'pago', 'renda', 
-        'bonus', 'comissao', 'venda', 'vendi'
+        'bonus', 'comissao', 'venda', 'vendi', 'rendimento', 'extra'
+    ];
+    
+    // Categorias de despesas reconhecidas
+    const categoriasDespesa = [
+        'mercado', 'supermercado', 'gasolina', 'combustivel', 'posto',
+        'loja', 'salao', 'farmacia', 'drogaria', 'aluguel', 'rent',
+        'restaurante', 'lanche', 'comida', 'food', 'uber', 'taxi',
+        'conta', 'luz', 'agua', 'internet', 'celular', 'telefone',
+        'medico', 'hospital', 'dentista', 'roupas', 'vestuario',
+        'casa', 'decoracao', 'moveis', 'eletronicos', 'games',
+        'cinema', 'entretenimento', 'curso', 'educacao', 'livro',
+        'transporte', 'onibus', 'metro', 'estacionamento', 'pedagio'
     ];
     
     const ehReceita = palavrasReceita.some(palavra => textoNormal.includes(palavra));
@@ -37,16 +49,25 @@ function extrairDados(texto) {
     const valor = parseFloat(numeroMatch[1].replace(',', '.'));
     if (isNaN(valor) || valor <= 0) return null;
     
+    // Extrair categoria mais inteligente
     let categoria = textoNormal
         .replace(/\d+(?:[.,]\d+)?/g, '')
         .replace(new RegExp(palavrasReceita.join('|'), 'g'), '')
         .trim();
     
-    if (!categoria) {
+    // Tentar identificar categoria específica para despesas
+    if (!ehReceita) {
+        const categoriaEncontrada = categoriasDespesa.find(cat => textoNormal.includes(cat));
+        if (categoriaEncontrada) {
+            categoria = categoriaEncontrada;
+        }
+    }
+    
+    if (!categoria || categoria.length < 2) {
         categoria = ehReceita ? 'receita' : 'despesa';
     }
     
-    categoria = categoria.replace(/\s+/g, ' ').trim() || (ehReceita ? 'receita' : 'despesa');
+    categoria = categoria.replace(/\s+/g, ' ').trim();
     
     return {
         tipo: ehReceita ? 'receita' : 'despesa',
@@ -56,56 +77,131 @@ function extrairDados(texto) {
     };
 }
 
+// Função para listar transações recentes com IDs
+async function listarTransacoesRecentes(userId, limite = 5) {
+    const { data, error } = await supabase
+        .from('transacoes')
+        .select('*')
+        .eq('user_id', userId)
+        .order('data', { ascending: false })
+        .limit(limite);
+
+    if (error || !data || data.length === 0) {
+        return 'Nenhuma transação encontrada.';
+    }
+
+    let lista = `📋 *Últimas ${data.length} transações:*\n\n`;
+    data.forEach((t, index) => {
+        const emoji = t.tipo === 'receita' ? '💚' : '💸';
+        const sinal = t.tipo === 'receita' ? '+' : '-';
+        const dataFormatada = new Date(t.data).toLocaleDateString('pt-BR');
+        lista += `${index + 1}. ${emoji} ${t.categoria}: ${sinal}R$ ${t.valor.toFixed(2)}\n`;
+        lista += `   📅 ${dataFormatada} | ID: ${t.id.substring(0, 8)}\n\n`;
+    });
+    
+    lista += '💡 Para apagar: "apagar 1" ou "apagar último"';
+    return lista;
+}
+
 // Rota para receber mensagens do Twilio
 app.post('/whatsapp', async (req, res) => {
     const mensagem = req.body.Body;
     const from = req.body.From;
-    const userId = from.split(':')[1];
+    // Extrair userId do número do WhatsApp de forma mais robusta
+    const userId = from.replace('whatsapp:', '').replace('+', '');
     const mensagemNormal = normalizarTexto(mensagem);
     const twiml = new MessagingResponse();
 
     try {
-        if (mensagemNormal.includes('apagar ultimo') || mensagemNormal.includes('deletar ultimo')) {
-            const { data, error } = await supabase
+        // Comando para listar transações
+        if (mensagemNormal.includes('listar') || mensagemNormal.includes('lista') || mensagemNormal.includes('historico')) {
+            const lista = await listarTransacoesRecentes(userId, 10);
+            twiml.message(lista);
+        }
+        
+        // Comando para apagar transação específica ou última
+        else if (mensagemNormal.includes('apagar') || mensagemNormal.includes('deletar')) {
+            // Buscar últimas transações para referência
+            const { data: transacoes, error } = await supabase
                 .from('transacoes')
-                .select('id, descricao, valor, tipo')
+                .select('*')
                 .eq('user_id', userId)
                 .order('data', { ascending: false })
-                .limit(1);
+                .limit(10);
 
-            if (error || !data || data.length === 0) {
+            if (error || !transacoes || transacoes.length === 0) {
                 twiml.message('❌ Nenhuma transação encontrada para apagar.');
             } else {
-                const transacao = data[0];
-                await supabase.from('transacoes').delete().eq('id', transacao.id);
-                twiml.message(`✅ Última transação apagada:\n${transacao.categoria}: R$ ${transacao.valor.toFixed(2)} (${transacao.tipo})`);
+                // Verificar se é para apagar por número (apagar 1, apagar 2, etc.)
+                const numeroMatch = mensagemNormal.match(/apagar\s+(\d+)/);
+                
+                if (numeroMatch) {
+                    const indice = parseInt(numeroMatch[1]) - 1;
+                    if (indice >= 0 && indice < transacoes.length) {
+                        const transacao = transacoes[indice];
+                        await supabase.from('transacoes').delete().eq('id', transacao.id).eq('user_id', userId);
+                        const emoji = transacao.tipo === 'receita' ? '💚' : '💸';
+                        twiml.message(`✅ Transação ${indice + 1} apagada:\n${emoji} ${transacao.categoria}: R$ ${transacao.valor.toFixed(2)} (${transacao.tipo})`);
+                    } else {
+                        twiml.message('❌ Número inválido. Digite "listar" para ver as transações numeradas.');
+                    }
+                }
+                // Apagar última transação
+                else if (mensagemNormal.includes('ultimo') || mensagemNormal.includes('última')) {
+                    const transacao = transacoes[0];
+                    await supabase.from('transacoes').delete().eq('id', transacao.id).eq('user_id', userId);
+                    const emoji = transacao.tipo === 'receita' ? '💚' : '💸';
+                    twiml.message(`✅ Última transação apagada:\n${emoji} ${transacao.categoria}: R$ ${transacao.valor.toFixed(2)} (${transacao.tipo})`);
+                }
+                // Apagar por ID parcial
+                else {
+                    const idParcial = mensagem.match(/([a-f0-9]{6,})/i);
+                    if (idParcial) {
+                        const transacao = transacoes.find(t => t.id.startsWith(idParcial[1]));
+                        if (transacao) {
+                            await supabase.from('transacoes').delete().eq('id', transacao.id).eq('user_id', userId);
+                            const emoji = transacao.tipo === 'receita' ? '💚' : '💸';
+                            twiml.message(`✅ Transação apagada:\n${emoji} ${transacao.categoria}: R$ ${transacao.valor.toFixed(2)} (${transacao.tipo})`);
+                        } else {
+                            twiml.message('❌ ID não encontrado. Digite "listar" para ver os IDs.');
+                        }
+                    } else {
+                        twiml.message('❌ Especifique qual apagar: "apagar 1", "apagar último" ou "listar" para ver opções.');
+                    }
+                }
             }
         }
         
         else if (mensagemNormal.includes('ajuda') || mensagemNormal.includes('help')) {
             const mensagemAjuda = `🤖 *Assistente Financeiro*
-📝 *Registrar gastos/receitas:*
-• "50 mercado"
-• "100 gasolina" 
+
+📝 *Registrar:*
+• "50 mercado" 
+• "100 gasolina"
+• "30 farmácia"
+• "80 loja"
 • "ganhei 500 freelance"
-• "salario 3000"
+• "salário 3000"
+
+📋 *Gerenciar:*
+• "listar" - ver últimas transações
+• "apagar 1" - apagar transação 1
+• "apagar último" - apagar última
+
 📊 *Ver relatórios:*
-• "relatorio"
-• "saldo"
-• "hoje"
-• "semana"
-• "mes"
-🗑️ *Apagar:*
-• "apagar ultimo"
+• "relatório" / "saldo"
+• "hoje" / "semana" / "mês"
+
 🌐 *Dashboard:*
-• "dashboard"
-💡 Pode usar acentos e maiúsculas normalmente!`;
+• "dashboard" - link do painel
+
+💡 Categorias reconhecidas: mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, médico, roupas e muito mais!`;
             twiml.message(mensagemAjuda);
         }
         
         else if (mensagemNormal.includes('dashboard')) {
             const dashboardUrl = `https://dashboard-financeiro-six.vercel.app/?user_id=${userId}`;
-            twiml.message(`🌐 *Dashboard Financeiro*\n\nAcesse: ${dashboardUrl}\n\n📱 Melhor visualização no celular!`);
+            twiml.message(`🌐 *Dashboard Financeiro*\n\nSeu link pessoal:\n${dashboardUrl}\n\n📱 Melhor visualização no celular!\n\n🔗 Você pode compartilhar este link - cada pessoa terá seus próprios dados separados.`);
         }
         
         else if (mensagemNormal.includes('relatorio') || mensagemNormal.includes('saldo') || 
@@ -151,7 +247,7 @@ app.post('/whatsapp', async (req, res) => {
                 resumo += `💰 Saldo: R$ ${saldo.toFixed(2)}\n`;
                 resumo += `📈 Receitas: R$ ${totalReceitas.toFixed(2)}\n`;
                 resumo += `📉 Despesas: R$ ${totalDespesas.toFixed(2)}\n`;
-                resumo += `📝 Total de transações: ${data.length}`;
+                resumo += `📝 Total: ${data.length} transações`;
                 
                 if (data.length > 0) {
                     resumo += `\n\n*Últimas transações:*`;
@@ -160,6 +256,10 @@ app.post('/whatsapp', async (req, res) => {
                         const sinal = t.tipo === 'receita' ? '+' : '-';
                         resumo += `\n${emoji} ${t.categoria}: ${sinal}R$ ${t.valor.toFixed(2)}`;
                     });
+                    
+                    if (data.length > 5) {
+                        resumo += `\n\n💡 Digite "listar" para ver todas`;
+                    }
                 }
                 
                 twiml.message(resumo);
@@ -177,8 +277,10 @@ app.post('/whatsapp', async (req, res) => {
                         categoria: dados.categoria,
                         tipo: dados.tipo,
                         descricao: dados.descricao,
-                        user_id: userId
-                    }]);
+                        user_id: userId,
+                        data: new Date().toISOString()
+                    }])
+                    .select();
 
                 if (error) {
                     console.error('Erro ao inserir transação:', error);
@@ -186,15 +288,21 @@ app.post('/whatsapp', async (req, res) => {
                 } else {
                     const emoji = dados.tipo === 'receita' ? '💚' : '💸';
                     const sinal = dados.tipo === 'receita' ? '+' : '-';
-                    twiml.message(`${emoji} *Transação registrada!*\n\n${dados.categoria}: ${sinal}R$ ${dados.valor.toFixed(2)}\nTipo: ${dados.tipo}`);
+                    twiml.message(`${emoji} *Transação registrada!*\n\n${dados.categoria}: ${sinal}R$ ${dados.valor.toFixed(2)}\nTipo: ${dados.tipo}\n\n💡 Digite "listar" para ver todas ou "relatório" para resumo.`);
                 }
             } else {
                 twiml.message(`❌ *Formato não reconhecido!*
+
 ✅ *Exemplos corretos:*
 • "50 mercado"
-• "100 gasolina"
+• "100 gasolina" 
+• "30 farmácia"
 • "ganhei 500 freelance"
 • "salário 3000"
+
+🏷️ *Categorias reconhecidas:*
+mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, médico, roupas e mais!
+
 💡 Digite *"ajuda"* para ver todos os comandos.`);
             }
         }

@@ -35,6 +35,7 @@ export default async function DashboardPage({
     );
   }
 
+  // ✅ CORREÇÃO: Busca com user_id correto e tratamento de erro
   const { data: transacoes, error } = await supabase
     .from('transacoes')
     .select('*')
@@ -42,6 +43,7 @@ export default async function DashboardPage({
     .order('data', { ascending: false });
 
   if (error) {
+    console.error('Erro ao buscar transações:', error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4">
         <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-soft p-8 max-w-md w-full text-center border border-gray-700/50">
@@ -62,6 +64,9 @@ export default async function DashboardPage({
       </div>
     );
   }
+
+  // ✅ CORREÇÃO: Verificar se transacoes é array válido
+  const transacoesArray = Array.isArray(transacoes) ? transacoes : [];
 
   return (
     <div className="min-h-screen bg-black">
@@ -86,8 +91,12 @@ export default async function DashboardPage({
               </div>
             </div>
 
-            {/* Status indicator */}
+            {/* User ID indicator */}
             <div className="hidden md:flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-blue-500/20 px-3 py-2 rounded-full border border-blue-500/30">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span className="text-blue-400 text-sm font-medium">ID: {userId.slice(-4)}</span>
+              </div>
               <div className="flex items-center space-x-2 bg-green-500/20 px-3 py-2 rounded-full border border-green-500/30">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-green-400 text-sm font-medium">Online</span>
@@ -96,10 +105,14 @@ export default async function DashboardPage({
           </div>
 
           {/* Mobile status */}
-          <div className="md:hidden mt-4 flex justify-center">
+          <div className="md:hidden mt-4 flex justify-center space-x-2">
+            <div className="flex items-center space-x-2 bg-blue-500/20 px-3 py-2 rounded-full border border-blue-500/30">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-blue-400 text-xs">ID: {userId.slice(-4)}</span>
+            </div>
             <div className="flex items-center space-x-2 bg-green-500/20 px-3 py-2 rounded-full border border-green-500/30">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-green-400 text-sm">Sistema Online</span>
+              <span className="text-green-400 text-xs">Online</span>
             </div>
           </div>
         </div>
@@ -107,7 +120,7 @@ export default async function DashboardPage({
 
       {/* Conteúdo principal */}
       <div className="container mx-auto px-4 py-6">
-        <DashboardClient transacoes={transacoes} userId={userId} />
+        <DashboardClient transacoes={transacoesArray} userId={userId} />
       </div>
 
       {/* WhatsApp Float Button aprimorado */}
@@ -127,6 +140,14 @@ export default async function DashboardPage({
         {/* Tooltip */}
         <div className="absolute bottom-16 right-0 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
           Enviar mensagem
+        </div>
+      </div>
+
+      {/* Instruções para compartilhamento */}
+      <div className="fixed bottom-6 left-6 z-50">
+        <div className="bg-gray-800/90 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg border border-gray-700/50 max-w-64">
+          <p className="font-medium mb-1">💡 Dashboard Pessoal</p>
+          <p>Este dashboard é único para você. Compartilhe o link - cada pessoa terá seus próprios dados.</p>
         </div>
       </div>
     </div>

@@ -30,11 +30,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
     setFilteredData(transacoes);
   }, [transacoes]);
 
-  // Função para recarregar dados do Supabase
-  const reloadData = async () => {
-    // Implementação de recarregar dados...
-  };
-
+  // Função para deletar uma transação
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja deletar esta transação?')) {
       setIsDeleting(id);
@@ -60,6 +56,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
     }
   };
   
+  // Estatísticas calculadas
   const stats = useMemo(() => {
     const receitas = filteredData.filter(t => t.tipo === 'receita');
     const despesas = filteredData.filter(t => t.tipo === 'despesa');
@@ -76,6 +73,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
     };
   }, [filteredData]);
 
+  // Categorias únicas
   const categories = useMemo(() => {
     const cats = [...new Set(data.map(t => t.categoria))];
     return cats.filter(Boolean).sort();

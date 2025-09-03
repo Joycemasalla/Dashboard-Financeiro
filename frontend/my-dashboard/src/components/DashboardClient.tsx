@@ -86,15 +86,15 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
             <div className="text-sm space-y-2 text-left">
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">"mercado 50"</code> - Registrar despesa</p>
+                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;mercado 50&quot;</code> - Registrar despesa</p>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">"ganhei 500 freela"</code> - Registrar receita</p>
+                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;ganhei 500 freela&quot;</code> - Registrar receita</p>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">"dashboard"</code> - Ver relatórios</p>
+                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;dashboard&quot;</code> - Ver relatórios</p>
               </div>
             </div>
           </div>

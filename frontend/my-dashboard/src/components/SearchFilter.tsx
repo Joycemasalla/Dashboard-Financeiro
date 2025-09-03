@@ -91,8 +91,8 @@ export default function SearchFilter({
 
   return (
     <div className="card-glass rounded-2xl p-6 shadow-soft">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-white flex items-center">
           <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -103,7 +103,7 @@ export default function SearchFilter({
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center"
+            className="text-sm text-red-400 hover:text-red-300 font-medium flex items-center px-3 py-2 bg-red-500/10 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all duration-200"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -126,7 +126,7 @@ export default function SearchFilter({
             placeholder="Buscar por categoria..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full pl-10 pr-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
           />
         </div>
 
@@ -134,11 +134,11 @@ export default function SearchFilter({
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
         >
           <option value="">Todas as categorias</option>
           {categories.map(category => (
-            <option key={category} value={category}>
+            <option key={category} value={category} className="bg-gray-800">
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </option>
           ))}
@@ -148,69 +148,83 @@ export default function SearchFilter({
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
         >
           <option value="">Todos os tipos</option>
-          <option value="receita">Receitas</option>
-          <option value="despesa">Despesas</option>
+          <option value="receita" className="bg-gray-800">Receitas</option>
+          <option value="despesa" className="bg-gray-800">Despesas</option>
         </select>
 
         {/* Filtro por período */}
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
         >
           <option value="all">Todos os períodos</option>
-          <option value="today">Hoje</option>
-          <option value="week">Última semana</option>
-          <option value="month">Último mês</option>
-          <option value="year">Último ano</option>
+          <option value="today" className="bg-gray-800">Hoje</option>
+          <option value="week" className="bg-gray-800">Última semana</option>
+          <option value="month" className="bg-gray-800">Último mês</option>
+          <option value="year" className="bg-gray-800">Último ano</option>
         </select>
       </div>
 
       {/* Indicadores de filtros ativos */}
       {hasActiveFilters && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {searchTerm && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+            <span className="filter-tag">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               Busca: &quot;{searchTerm}&quot;
               <button
                 onClick={() => setSearchTerm('')}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                className="ml-1 hover:text-white"
               >
                 ×
               </button>
             </span>
           )}
           {selectedCategory && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-              Categoria: {selectedCategory}
+            <span className="filter-tag">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              {selectedCategory}
               <button
                 onClick={() => setSelectedCategory('')}
-                className="ml-2 text-purple-600 hover:text-purple-800"
+                className="ml-1 hover:text-white"
               >
                 ×
               </button>
             </span>
           )}
           {selectedType && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-              Tipo: {selectedType}
+            <span className="filter-tag">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+              </svg>
+              {selectedType === 'receita' ? 'Receitas' : 'Despesas'}
               <button
                 onClick={() => setSelectedType('')}
-                className="ml-2 text-green-600 hover:text-green-800"
+                className="ml-1 hover:text-white"
               >
                 ×
               </button>
             </span>
           )}
           {dateRange !== 'all' && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
-              Período: {dateRange === 'today' ? 'Hoje' : dateRange === 'week' ? 'Semana' : dateRange === 'month' ? 'Mês' : 'Ano'}
+            <span className="filter-tag">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {dateRange === 'today' ? 'Hoje' : 
+               dateRange === 'week' ? 'Semana' : 
+               dateRange === 'month' ? 'Mês' : 'Ano'}
               <button
                 onClick={() => setDateRange('all')}
-                className="ml-2 text-orange-600 hover:text-orange-800"
+                className="ml-1 hover:text-white"
               >
                 ×
               </button>

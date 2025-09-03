@@ -32,12 +32,15 @@ export default function LineChart({ data }) {
 
   if (sortedDates.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-400">
         <div className="text-center">
-          <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4" />
-          </svg>
-          <p>Nenhum dado temporal para exibir</p>
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-700/50 rounded-full flex items-center justify-center border border-gray-600/50">
+            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4" />
+            </svg>
+          </div>
+          <p className="text-gray-400 font-medium">Nenhum dado temporal</p>
+          <p className="text-sm text-gray-500 mt-1">Adicione transações para ver a evolução</p>
         </div>
       </div>
     );
@@ -53,16 +56,19 @@ export default function LineChart({ data }) {
       {
         label: 'Receitas',
         data: receitas,
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
         fill: '+1',
         tension: 0.4,
         borderWidth: 3,
-        pointBackgroundColor: '#10b981',
-        pointBorderColor: '#ffffff',
+        pointBackgroundColor: '#22c55e',
+        pointBorderColor: '#000000',
         pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#22c55e',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 3,
       },
       {
         label: 'Despesas',
@@ -73,10 +79,13 @@ export default function LineChart({ data }) {
         tension: 0.4,
         borderWidth: 3,
         pointBackgroundColor: '#ef4444',
-        pointBorderColor: '#ffffff',
+        pointBorderColor: '#000000',
         pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#ef4444',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 3,
       },
       {
         label: 'Saldo',
@@ -86,12 +95,15 @@ export default function LineChart({ data }) {
         fill: false,
         tension: 0.4,
         borderWidth: 2,
-        borderDash: [5, 5],
+        borderDash: [8, 4],
         pointBackgroundColor: '#6366f1',
-        pointBorderColor: '#ffffff',
+        pointBorderColor: '#000000',
         pointBorderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointHoverBackgroundColor: '#6366f1',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 3,
       }
     ],
   };
@@ -112,18 +124,29 @@ export default function LineChart({ data }) {
           pointStyle: 'circle',
           font: {
             size: 12,
-            weight: '500'
+            weight: '500',
+            family: 'Inter, sans-serif'
           },
-          color: '#374151'
+          color: '#d1d5db',
+          boxWidth: 12,
+          boxHeight: 12,
         },
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
         borderColor: '#374151',
         borderWidth: 1,
-        cornerRadius: 8,
+        cornerRadius: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        padding: 12,
         callbacks: {
           label: function(context) {
             const label = context.dataset.label || '';
@@ -137,13 +160,14 @@ export default function LineChart({ data }) {
       x: {
         display: true,
         grid: {
-          color: '#f3f4f6',
+          color: 'rgba(75, 85, 99, 0.3)',
           drawBorder: false,
         },
         ticks: {
-          color: '#6b7280',
+          color: '#9ca3af',
           font: {
-            size: 11
+            size: 11,
+            family: 'Inter, sans-serif'
           },
           maxTicksLimit: 8,
           callback: function(value, index, values) {
@@ -158,13 +182,14 @@ export default function LineChart({ data }) {
       y: {
         display: true,
         grid: {
-          color: '#f3f4f6',
+          color: 'rgba(75, 85, 99, 0.3)',
           drawBorder: false,
         },
         ticks: {
-          color: '#6b7280',
+          color: '#9ca3af',
           font: {
-            size: 11
+            size: 11,
+            family: 'Inter, sans-serif'
           },
           callback: function(value) {
             return 'R$ ' + value.toFixed(0);
@@ -178,7 +203,7 @@ export default function LineChart({ data }) {
       },
     },
     animation: {
-      duration: 1000,
+      duration: 1200,
       easing: 'easeInOutQuart',
     },
   };
@@ -192,21 +217,32 @@ export default function LineChart({ data }) {
     <div className="relative h-full">
       <Line data={chartData} options={options} />
       
-      {/* Resumo estatístico */}
-      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-        <div className="text-xs text-gray-600 mb-2">Período (últimos {sortedDates.length} dias)</div>
-        <div className="space-y-1">
+      {/* Resumo estatístico melhorado */}
+      <div className="absolute top-2 right-2 bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-700/50">
+        <div className="text-xs text-gray-400 mb-2 font-medium">
+          Período ({sortedDates.length} dias)
+        </div>
+        <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-green-600">● Receitas:</span>
-            <span className="font-semibold">R$ {totalReceitas.toFixed(2)}</span>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-gray-300">Receitas:</span>
+            </div>
+            <span className="font-semibold text-green-400">R$ {totalReceitas.toFixed(2)}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-red-600">● Despesas:</span>
-            <span className="font-semibold">R$ {totalDespesas.toFixed(2)}</span>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+              <span className="text-gray-300">Despesas:</span>
+            </div>
+            <span className="font-semibold text-red-400">R$ {totalDespesas.toFixed(2)}</span>
           </div>
-          <div className="flex items-center justify-between text-xs border-t pt-1">
-            <span className={saldoTotal >= 0 ? 'text-blue-600' : 'text-red-600'}>Saldo:</span>
-            <span className={`font-semibold ${saldoTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="flex items-center justify-between text-xs border-t border-gray-600/50 pt-2">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+              <span className="text-gray-300">Saldo:</span>
+            </div>
+            <span className={`font-semibold ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               R$ {saldoTotal.toFixed(2)}
             </span>
           </div>

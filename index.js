@@ -16,32 +16,49 @@ function extrairDados(texto) {
 
     // Palavras-chave para identificar receitas
     const palavrasChaveReceita = ['receita', 'ganhei', 'salario', 'salário', 'pago', 'pagamento'];
+    // Palavras-chave para identificar despesas
+    const palavrasChaveDespesa = ['despesa', 'gastei', 'paguei'];
 
-    // Padrão para transações do tipo "categoria valor" ou "valor categoria"
-    // Ex: "mercado 50", "50 mercado"
-    const matchValorCategoria = textoFormatado.match(/^(\d+(?:[.,]\d+)?)\s+(.*)$/) || textoFormatado.match(/^(.*)\s+(\d+(?:[.,]\d+)?)$/);
-    if (matchValorCategoria) {
-        const valor = parseFloat((matchValorCategoria[1] || matchValorCategoria[2]).replace(',', '.'));
-        const categoria = (matchValorCategoria[2] || matchValorCategoria[1]).trim();
-        const tipo = palavrasChaveReceita.some(p => categoria.startsWith(p)) ? 'receita' : 'despesa';
-        return { tipo, valor, categoria };
-    }
-
-    // Padrão para transações com palavras-chave de receita
-    // Ex: "ganhei 500 freela", "salário 1500"
+    // Padrão para "palavra-chave valor categoria" (ex: "ganhei 500 freela")
     for (const p of palavrasChaveReceita) {
         if (textoFormatado.startsWith(p)) {
             const match = textoFormatado.match(new RegExp(`^${p}\\s+(\\d+(?:[.,]\\d+)?)(?:\\s+(.*))?$`));
             if (match) {
                 const valor = parseFloat(match[1].replace(',', '.'));
                 const categoria = match[2] || p;
-                return { tipo: 'receita', valor, categoria };
+                return { tipo: 'receita', valor, categoria, descricao: textoFormatado };
             }
         }
     }
 
+    // Padrão para "palavra-chave valor categoria" (ex: "gastei 50 mercado")
+    for (const p of palavrasChaveDespesa) {
+        if (textoFormatado.startsWith(p)) {
+            const match = textoFormatado.match(new RegExp(`^${p}\\s+(\\d+(?:[.,]\\d+)?)(?:\\s+(.*))?$`));
+            if (match) {
+                const valor = parseFloat(match[1].replace(',', '.'));
+                const categoria = match[2] || p;
+                return { tipo: 'despesa', valor, categoria, descricao: textoFormatado };
+            }
+        }
+    }
+
+    // Padrão para "categoria valor" (ex: "mercado 50") ou "valor categoria" (ex: "50 mercado")
+    const match = textoFormatado.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)$/) || textoFormatado.match(/^(\d+(?:[.,]\d+)?)\s+(.+?)$/);
+    if (match) {
+        const [fullMatch, parte1, parte2] = match;
+        const valor = parseFloat((match[2] || match[1]).replace(',', '.'));
+        const categoria = (match[1] || match[2]);
+
+        const isReceita = palavrasChaveReceita.includes(categoria);
+        const tipo = isReceita ? 'receita' : 'despesa';
+
+        return { tipo, valor, categoria, descricao: textoFormatado };
+    }
+
     return null; // Formato não reconhecido
 }
+
 
 // Rota para receber mensagens do Twilio
 app.post('/whatsapp', async (req, res) => {
@@ -54,7 +71,7 @@ app.post('/whatsapp', async (req, res) => {
             // Busca a última transação
             const { data, error } = await supabase
                 .from('transacoes')
-                .select('id')
+                .select('id, descricao, valor')
                 .order('data', { ascending: false })
                 .limit(1);
 
@@ -63,7 +80,7 @@ app.post('/whatsapp', async (req, res) => {
             } else {
                 const idToDelete = data[0].id;
                 await supabase.from('transacoes').delete().eq('id', idToDelete);
-                twiml.message(`A última transação (ID: ${idToDelete.substring(0, 5)}...) foi apagada.`);
+                twiml.message(`A última transação ("${data[0].descricao}") de R$ ${data[0].valor.toFixed(2)} foi apagada com sucesso!`);
             }
         } catch (err) {
             twiml.message('Ops! Algo deu errado no servidor ao tentar apagar a última transação.');
@@ -130,7 +147,7 @@ app.post('/whatsapp', async (req, res) => {
 
         if (mensagem.includes('hoje')) {
             filtroDeTempo = 'today';
-            queryDate.setHours(0, 0, 0, 0);
+            queryDate.setHours(now.getHours() - 24, now.getMinutes(), now.getSeconds(), now.getMilliseconds());
         } else if (mensagem.includes('semana')) {
             filtroDeTempo = 'this_week';
             queryDate.setDate(now.getDate() - 7);
@@ -154,7 +171,7 @@ app.post('/whatsapp', async (req, res) => {
                 const totalDespesa = data.filter(t => t.tipo === 'despesa').reduce((sum, t) => sum + t.valor, 0);
                 const saldo = totalReceita - totalDespesa;
 
-                let resumo = `*Resumo Financeiro* (${filtroDeTempo === 'today' ? 'hoje' : filtroDeTempo === 'this_week' ? 'últimos 7 dias' : 'últimos 30 dias'}):\n`;
+                let resumo = `*Resumo Financeiro* (${filtroDeTempo === 'today' ? 'hoje' : filtroDeTempo === 'this_week' ? 'últimos 7 dias' : 'último mês'}):\n`;
                 resumo += `\nSaldo atual: R$ ${saldo.toFixed(2)}`;
                 resumo += `\nReceitas: R$ ${totalReceita.toFixed(2)}`;
                 resumo += `\nDespesas: R$ ${totalDespesa.toFixed(2)}`;
@@ -178,7 +195,7 @@ app.post('/whatsapp', async (req, res) => {
     // --- FIM DA LÓGICA DE RELATÓRIO ---
     else {
         const dados = extrairDados(mensagem);
-        if (dados) {
+        if (dados && dados.valor) { // --- CORREÇÃO: Verifique se o valor não é nulo
             try {
                 const { data, error } = await supabase
                     .from('transacoes')
@@ -186,7 +203,7 @@ app.post('/whatsapp', async (req, res) => {
                         valor: dados.valor,
                         categoria: dados.categoria,
                         tipo: dados.tipo,
-                        descricao: mensagem // Salva a mensagem original como descrição
+                        descricao: dados.descricao
                     }]);
 
                 if (error) {

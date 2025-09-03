@@ -4,10 +4,39 @@ import DashboardClient from '../components/DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { user_id: string | undefined };
+}) {
+  const userId = searchParams.user_id;
+
+  if (!userId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4 text-center">
+        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-soft p-8 max-w-md w-full text-center border border-gray-700/50">
+          <h2 className="text-xl font-semibold text-white mb-2">Acesso Negado</h2>
+          <p className="text-gray-400 mb-6">
+            Por favor, acesse o dashboard através do link enviado pelo WhatsApp.
+          </p>
+          <a
+            href="https://wa.me/+14155238886" // Substitua pelo seu número de Twilio
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+          >
+            Abrir WhatsApp
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const { data: transacoes, error } = await supabase
     .from('transacoes')
     .select('*')
+    // --- NOVO: Adiciona filtro por user_id na busca inicial
+    .eq('user_id', userId)
     .order('data', { ascending: false });
 
   if (error) {
@@ -76,7 +105,8 @@ export default async function DashboardPage() {
 
       {/* Conteúdo principal */}
       <div className="container mx-auto px-4 py-6">
-        <DashboardClient transacoes={transacoes} />
+        {/* --- NOVO: Passa o user_id para o DashboardClient */}
+        <DashboardClient transacoes={transacoes} userId={userId} />
       </div>
 
       {/* WhatsApp Float Button aprimorado */}

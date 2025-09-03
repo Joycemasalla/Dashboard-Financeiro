@@ -13,9 +13,11 @@ const LineChart = dynamic(() => import('./LineChart'), { ssr: false });
 
 type DashboardClientProps = {
   transacoes: Transacao[];
+  // --- NOVO: Adiciona user_id como prop
+  userId: string;
 };
 
-export default function DashboardClient({ transacoes }: DashboardClientProps) {
+export default function DashboardClient({ transacoes, userId }: DashboardClientProps) {
   const [data, setData] = useState(transacoes);
   const [filteredData, setFilteredData] = useState(transacoes);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +38,8 @@ export default function DashboardClient({ transacoes }: DashboardClientProps) {
       const { error } = await supabase
         .from('transacoes')
         .delete()
+        // --- NOVO: Adiciona o user_id para filtrar o delete
+        .eq('user_id', userId)
         .eq('id', id);
 
       if (error) {

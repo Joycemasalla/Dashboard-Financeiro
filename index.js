@@ -10,6 +10,11 @@ const supabaseUrl = 'https://gaptsfozqyybssxxmedj.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcHRzZm96cXl5YnNzeHhtZWRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MzA2ODIsImV4cCI6MjA3MjQwNjY4Mn0.0iun-arhyO0Ntxm4xj7GASFdlbvJcLdEWS9aTyeM5jw';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Adicionei uma etapa manual que você deve fazer no seu banco de dados
+// 1. Vá para o Supabase Dashboard.
+// 2. Na tabela 'transacoes', adicione uma nova coluna chamada 'user_id' do tipo 'text'.
+// 3. Marque a coluna como 'Not Null' (não nula) e salve as alterações.
+
 // Função normalizar texto (remove acentos e converte para minúsculo)
 function normalizarTexto(texto) {
     return texto
@@ -65,6 +70,9 @@ function extrairDados(texto) {
 // Rota para receber mensagens do Twilio
 app.post('/whatsapp', async (req, res) => {
     const mensagem = req.body.Body;
+    const from = req.body.From;
+    // --- NOVO: Extrai o ID do usuário (número de telefone) do remetente
+    const userId = from.split(':')[1];
     const mensagemNormal = normalizarTexto(mensagem);
     const twiml = new MessagingResponse();
 
@@ -74,6 +82,8 @@ app.post('/whatsapp', async (req, res) => {
             const { data, error } = await supabase
                 .from('transacoes')
                 .select('id, descricao, valor, tipo')
+                // --- NOVO: Adiciona filtro por user_id
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false })
                 .limit(1);
 
@@ -115,14 +125,15 @@ app.post('/whatsapp', async (req, res) => {
         
         // COMANDO: Dashboard
         else if (mensagemNormal.includes('dashboard')) {
-            const dashboardUrl = 'https://dashboard-financeiro-six.vercel.app/';
+            // --- NOVO: Inclui o user_id como parâmetro na URL
+            const dashboardUrl = `https://dashboard-financeiro-six.vercel.app/?user_id=${userId}`;
             twiml.message(`🌐 *Dashboard Financeiro*\n\nAcesse: ${dashboardUrl}\n\n📱 Melhor visualização no celular!`);
         }
         
         // COMANDO: Relatórios
         else if (mensagemNormal.includes('relatorio') || mensagemNormal.includes('saldo') || 
-                 mensagemNormal.includes('hoje') || mensagemNormal.includes('semana') || 
-                 mensagemNormal.includes('mes')) {
+                  mensagemNormal.includes('hoje') || mensagemNormal.includes('semana') || 
+                  mensagemNormal.includes('mes')) {
             
             let filtroTempo = '';
             let dataInicio = new Date();
@@ -144,6 +155,8 @@ app.post('/whatsapp', async (req, res) => {
             const { data, error } = await supabase
                 .from('transacoes')
                 .select('*')
+                // --- NOVO: Adiciona filtro por user_id
+                .eq('user_id', userId)
                 .gte('created_at', dataInicio.toISOString())
                 .order('created_at', { ascending: false });
 
@@ -189,7 +202,9 @@ app.post('/whatsapp', async (req, res) => {
                         valor: dados.valor,
                         categoria: dados.categoria,
                         tipo: dados.tipo,
-                        descricao: dados.descricao
+                        descricao: dados.descricao,
+                        // --- NOVO: Adiciona o user_id no insert
+                        user_id: userId
                     }]);
 
                 if (error) {

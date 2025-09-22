@@ -137,6 +137,9 @@ app.post('/whatsapp', async (req, res) => {
     console.log('Headers:', req.headers);
     console.log('Body completo:', req.body);
 
+    // Criar twiml no início para estar disponível em todo escopo
+    const twiml = new MessagingResponse();
+
     try {
         const mensagem = req.body.Body;
         const from = req.body.From;
@@ -144,13 +147,14 @@ app.post('/whatsapp', async (req, res) => {
         // Verificar se os dados básicos estão presentes
         if (!mensagem || !from) {
             console.error('❌ Dados obrigatórios ausentes:', { mensagem, from });
-            return res.status(400).send('Dados obrigatórios ausentes');
+            twiml.message('❌ Erro: dados da mensagem não recebidos corretamente.');
+            res.writeHead(200, { 'Content-Type': 'text/xml' });
+            return res.end(twiml.toString());
         }
 
         // Extrair userId do número do WhatsApp de forma mais robusta
         const userId = from.replace('whatsapp:', '').replace('+', '');
         const mensagemNormal = normalizarTexto(mensagem);
-        const twiml = new MessagingResponse();
 
         console.log(`📱 Processando mensagem de ${userId}: "${mensagem}"`);
 
@@ -367,11 +371,7 @@ mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, m
 
     } catch (err) {
         console.error('❌ Erro geral:', err);
-        const twiml = new MessagingResponse();
         twiml.message('❌ Erro interno do servidor. Tente novamente em alguns minutos.');
-        
-        res.writeHead(200, { 'Content-Type': 'text/xml' });
-        return res.end(twiml.toString());
     }
 
     console.log('📤 Enviando resposta TwiML');

@@ -134,11 +134,12 @@ async function listarTransacoesRecentes(userId, limite = 5) {
 // Rota para receber mensagens do Twilio
 app.post('/whatsapp', async (req, res) => {
     console.log('🚀 Mensagem recebida no WhatsApp');
-    console.log('Headers:', req.headers);
-    console.log('Body completo:', req.body);
-
+    
     // Criar twiml no início para estar disponível em todo escopo
     const twiml = new MessagingResponse();
+    
+    // Configurar timeout de resposta
+    res.setTimeout(10000); // 10 segundos max
 
     try {
         const mensagem = req.body.Body;
@@ -374,10 +375,16 @@ mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, m
         twiml.message('❌ Erro interno do servidor. Tente novamente em alguns minutos.');
     }
 
-    console.log('📤 Enviando resposta TwiML');
-    console.log('TwiML gerado:', twiml.toString());
-    res.writeHead(200, { 'Content-Type': 'text/xml' });
-    res.end(twiml.toString());
+    // Sempre enviar resposta, mesmo se houver erro
+    try {
+        console.log('📤 Enviando resposta TwiML');
+        console.log('TwiML gerado:', twiml.toString());
+        res.writeHead(200, { 'Content-Type': 'text/xml' });
+        res.end(twiml.toString());
+    } catch (responseError) {
+        console.error('❌ Erro ao enviar resposta:', responseError);
+        res.status(500).end();
+    }
 });
 
 const PORT = process.env.PORT || 3000;

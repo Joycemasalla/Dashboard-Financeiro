@@ -45,7 +45,7 @@ body {
   min-height: 100vh;
 }
 
-/* Background Pattern */
+/* Background Pattern Melhorado para Mobile */
 body::before {
   content: '';
   position: fixed;
@@ -61,9 +61,9 @@ body::before {
   z-index: -1;
 }
 
-/* Scrollbar Dark */
+/* Scrollbar Dark Melhorado */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -72,14 +72,14 @@ body::before {
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
 
-/* Cards */
+/* Cards com Melhor Responsividade */
 .card-glass {
   background: rgba(20, 20, 20, 0.95);
   backdrop-filter: blur(20px);
@@ -87,6 +87,7 @@ body::before {
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
 }
 
 .card-glass:hover {
@@ -94,6 +95,15 @@ body::before {
   box-shadow: 
     0 12px 40px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(99, 102, 241, 0.2);
+}
+
+/* Cards Compactos para Mobile */
+@media (max-width: 768px) {
+  .card-glass {
+    padding: 1rem;
+    border-radius: 0.875rem;
+    margin-bottom: 1rem;
+  }
 }
 
 .gradient-text {
@@ -115,11 +125,12 @@ body::before {
     0 0 0 1px rgba(99, 102, 241, 0.2);
 }
 
-/* Loading skeleton */
+/* Loading skeleton Melhorado */
 .skeleton {
   background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
+  border-radius: 0.5rem;
 }
 
 @keyframes loading {
@@ -127,7 +138,7 @@ body::before {
   100% { background-position: -200% 0; }
 }
 
-/* Animations */
+/* Animações Otimizadas */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-4px); }
@@ -146,12 +157,12 @@ body::before {
   animation: pulse-custom 2s ease-in-out infinite;
 }
 
-/* Buttons */
+/* Botões Melhorados */
 .btn-primary {
   background: var(--gradient-primary);
   color: white;
   padding: 0.875rem 1.75rem;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -159,6 +170,12 @@ body::before {
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
   position: relative;
   overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  min-height: 44px; /* Melhora a área de toque no mobile */
 }
 
 .btn-primary::before {
@@ -185,25 +202,55 @@ body::before {
   transform: translateY(0);
 }
 
-/* Glass morphism enhanced */
+/* Botões Secundários */
+.btn-secondary {
+  background: rgba(55, 65, 81, 0.8);
+  color: #d1d5db;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  cursor: pointer;
+  transform: translateY(0);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  min-height: 44px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(55, 65, 81, 1);
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Glass morphism melhorado */
 .glass-morphism {
-  background: rgba(20, 20, 20, 0.8);
-  backdrop-filter: blur(16px) saturate(200%);
-  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
 }
 
-/* Custom inputs dark */
+/* Inputs melhorados com melhor UX mobile */
 input, select, textarea {
   background: rgba(20, 20, 20, 0.9) !important;
   border: 1px solid rgba(51, 51, 51, 0.8) !important;
   color: var(--text-primary) !important;
-  border-radius: 0.75rem !important;
-  padding: 0.875rem 1rem !important;
+  border-radius: 0.875rem !important;
+  padding: 1rem !important;
   transition: all 0.3s ease !important;
+  font-size: 16px !important; /* Previne zoom no iOS */
+  min-height: 44px !important; /* Melhor área de toque */
 }
 
 input:focus, select:focus, textarea:focus {
@@ -217,23 +264,114 @@ input::placeholder {
   color: var(--text-muted) !important;
 }
 
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  ::-webkit-scrollbar {
-    width: 3px;
-  }
-  
-  .card-glass {
-    border-radius: 1rem;
-    margin: 0.5rem;
-  }
-  
-  input, select, textarea {
-    font-size: 16px !important; /* Prevents zoom on iOS */
+/* Container principal responsivo */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .main-container {
+    padding: 0 1.5rem;
   }
 }
 
-/* Neon glow effects for dark theme */
+@media (min-width: 1024px) {
+  .main-container {
+    padding: 0 2rem;
+  }
+}
+
+/* Grid responsivo melhorado */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Charts Grid Responsivo */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Melhorias específicas para mobile */
+@media (max-width: 768px) {
+  /* Scrollbar mais fino no mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  /* Padding e espaçamentos otimizados */
+  .card-glass {
+    padding: 1rem;
+    margin: 0 0 1rem 0;
+  }
+  
+  /* Botões com área de toque adequada */
+  button, .btn-primary, .btn-secondary {
+    min-height: 48px;
+    font-size: 16px !important;
+  }
+  
+  /* Headers compactos */
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Espaçamentos reduzidos */
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  /* Grid de filtros responsivo */
+  .filters-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 768px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .filters-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Neon glow effects otimizados */
 .neon-blue {
   box-shadow: 
     0 0 10px rgba(59, 130, 246, 0.5),
@@ -255,10 +393,11 @@ input::placeholder {
     0 0 30px rgba(239, 68, 68, 0.1);
 }
 
-/* Stats cards hover effects */
+/* Stats cards com hover melhorado */
 .stat-card {
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .stat-card::before {
@@ -276,28 +415,56 @@ input::placeholder {
   left: 100%;
 }
 
-/* Transaction item hover effects */
+@media (max-width: 768px) {
+  .stat-card:active::before {
+    left: 100%;
+  }
+}
+
+/* Transaction item melhorado */
 .transaction-item {
   position: relative;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   border: 1px solid transparent;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .transaction-item:hover {
   border-color: rgba(99, 102, 241, 0.3);
   background: rgba(20, 20, 20, 0.8);
+  transform: translateY(-1px);
 }
 
-/* Chart containers */
+@media (max-width: 768px) {
+  .transaction-item {
+    padding: 0.875rem;
+  }
+  
+  .transaction-item:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Chart containers otimizados */
 .chart-container {
   position: relative;
   background: rgba(20, 20, 20, 0.5);
   border-radius: 1rem;
   padding: 1rem;
   border: 1px solid rgba(51, 51, 51, 0.3);
+  min-height: 250px;
 }
 
-/* Improved button styles for delete */
+@media (max-width: 768px) {
+  .chart-container {
+    min-height: 200px;
+    padding: 0.75rem;
+  }
+}
+
+/* Delete button melhorado */
 .delete-btn {
   padding: 0.5rem;
   border-radius: 0.5rem;
@@ -305,6 +472,11 @@ input::placeholder {
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.2);
   transition: all 0.2s ease;
+  min-height: 40px;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .delete-btn:hover {
@@ -314,17 +486,26 @@ input::placeholder {
   transform: scale(1.05);
 }
 
-/* Filter tags */
+@media (max-width: 768px) {
+  .delete-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Filter tags melhorados */
 .filter-tag {
   background: rgba(99, 102, 241, 0.2);
   color: #c7d2fe;
   border: 1px solid rgba(99, 102, 241, 0.3);
   border-radius: 2rem;
-  padding: 0.25rem 0.75rem;
+  padding: 0.375rem 0.875rem;
   font-size: 0.875rem;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  margin: 0.25rem;
+  min-height: 32px;
 }
 
 .filter-tag button {
@@ -336,19 +517,25 @@ input::placeholder {
   margin: 0;
   font-size: 1.2em;
   line-height: 1;
+  min-height: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .filter-tag button:hover {
   color: #ffffff;
 }
 
-/* Header gradient for dark theme */
+/* Header melhorado */
 .header-gradient {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
   border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+  backdrop-filter: blur(10px);
 }
 
-/* WhatsApp button enhanced */
+/* WhatsApp button otimizado */
 .whatsapp-btn {
   background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
   box-shadow: 
@@ -356,6 +543,11 @@ input::placeholder {
     0 0 0 1px rgba(37, 211, 102, 0.2);
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 56px;
+  min-width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .whatsapp-btn:hover {
@@ -365,28 +557,110 @@ input::placeholder {
     0 0 0 1px rgba(37, 211, 102, 0.3);
 }
 
-/* Mobile-first responsive adjustments */
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+@media (max-width: 768px) {
+  .whatsapp-btn {
+    min-height: 60px;
+    min-width: 60px;
+  }
+}
+
+/* Floating Action Buttons */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .fab {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Loading states melhorados */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Smooth transitions para melhor UX */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Safe area para dispositivos com notch */
+@supports (padding: max(0px)) {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
   }
   
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Otimizações de performance */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Melhorias de acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .float-animation,
+  .pulse-custom,
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+/* Focus states melhorados para acessibilidade */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Alto contraste para melhor legibilidade */
+@media (prefers-contrast: high) {
   .card-glass {
-    padding: 1rem;
-    margin: 0 0.5rem;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.3);
   }
   
-  .grid-responsive {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+  .text-gray-400 {
+    color: #d1d5db !important;
   }
   
-  .text-responsive-sm {
-    font-size: 0.875rem;
-  }
-  
-  .text-responsive-lg {
-    font-size: 1.25rem;
+  .text-gray-500 {
+    color: #9ca3af !important;
   }
 }

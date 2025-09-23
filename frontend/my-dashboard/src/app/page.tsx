@@ -213,8 +213,8 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      {/* WhatsApp Float Button - Melhorado e mais acessível */}
-      <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
+      {/* WhatsApp Float Button - Posição corrigida */}
+      <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-40">
         <a
           href={whatsappLink}
           target="_blank"
@@ -228,20 +228,12 @@ export default async function DashboardPage({
         </a>
         
         {/* Tooltip melhorado */}
-        <div className="absolute bottom-16 right-0 bg-gray-900/95 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200 whitespace-nowrap border border-gray-700/50 shadow-lg">
+        <div className="absolute bottom-16 right-0 bg-gray-900/95 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200 whitespace-nowrap border border-gray-700/50 shadow-lg pointer-events-none">
           💬 Suporte WhatsApp
         </div>
       </div>
 
-      {/* Indicator de conexão mobile */}
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden">
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white text-center py-1 text-xs">
-          <div className="flex items-center justify-center space-x-1">
-            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-            <span>Sistema Online</span>
-          </div>
-        </div>
-      </div>
+      {/* Removido o indicador de conexão mobile que estava sobrepondo */}
     </div>
   );
 }

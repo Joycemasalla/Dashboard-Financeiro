@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { Transacao } from '@/types';
 import StatCard from './StatCard';
 import SearchFilter from './SearchFilter';
+import AddTransactionForm from './AddTransactionForm';
 import { supabase } from '../lib/supabaseClient';
 
 const PieChart = dynamic(() => import('./PieChart'), { ssr: false });
@@ -29,6 +30,11 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
     setData(transacoes);
     setFilteredData(transacoes);
   }, [transacoes]);
+
+  // Função para recarregar dados após adicionar nova transação
+  const handleTransactionAdded = () => {
+    window.location.reload(); // Recarrega a página para atualizar os dados
+  };
 
   // Função para deletar uma transação
   const handleDelete = async (id: string) => {
@@ -89,25 +95,28 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Nenhuma transação encontrada</h3>
-          <p className="text-gray-400 mb-6">Envie uma mensagem no WhatsApp para começar a registrar suas transações!</p>
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl border border-green-500/30">
+          <p className="text-gray-400 mb-6">Clique no botão + para adicionar sua primeira transação!</p>
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl border border-blue-500/30">
             <p className="font-semibold mb-3 text-lg">Como usar:</p>
             <div className="text-sm space-y-2 text-left">
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;mercado 50&quot;</code> - Registrar despesa</p>
+                <p>Clique no botão <strong>+</strong> no canto inferior direito</p>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;ganhei 500 freela&quot;</code> - Registrar receita</p>
+                <p>Preencha o valor, categoria e tipo</p>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <p><code className="bg-white/20 px-2 py-1 rounded">&quot;dashboard&quot;</code> - Ver relatórios</p>
+                <p>Veja seus gráficos e relatórios atualizados!</p>
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Formulário para adicionar transações */}
+        <AddTransactionForm userId={userId} onSuccess={handleTransactionAdded} />
       </div>
     );
   }
@@ -284,6 +293,9 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
           </div>
         )}
       </div>
+
+      {/* Formulário para adicionar transações */}
+      <AddTransactionForm userId={userId} onSuccess={handleTransactionAdded} />
     </div>
   );
 }

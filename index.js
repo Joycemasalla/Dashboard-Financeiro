@@ -1,14 +1,27 @@
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
+// const MessagingResponse = require('twilio').twiml.MessagingResponse; // COMENTADO: Twilio
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Adicionar suporte para JSON
+
+// CORS para permitir requisições do frontend
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
 
 // Adicionar middleware de log para debug
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-    if (req.method === 'POST' && req.path === '/whatsapp') {
+    if (req.method === 'POST') {
         console.log('Body recebido:', req.body);
     }
     next();
@@ -24,9 +37,151 @@ app.get('/', (req, res) => {
     res.json({ 
         status: 'online', 
         timestamp: new Date().toISOString(),
-        message: 'API Financeiro WhatsApp funcionando!'
+        message: 'API Financeiro funcionando!'
     });
 });
+
+// NOVA ROTA: Adicionar transação via API
+app.post('/api/transacoes', async (req, res) => {
+    try {
+        const { valor, categoria, tipo, descricao, user_id } = req.body;
+
+        // Validações básicas
+        if (!valor || !categoria || !tipo || !user_id) {
+            return res.status(400).json({
+                error: 'Campos obrigatórios: valor, categoria, tipo, user_id'
+            });
+        }
+
+        if (tipo !== 'receita' && tipo !== 'despesa') {
+            return res.status(400).json({
+                error: 'Tipo deve ser "receita" ou "despesa"'
+            });
+        }
+
+        if (valor <= 0) {
+            return res.status(400).json({
+                error: 'Valor deve ser maior que zero'
+            });
+        }
+
+        // Inserir no Supabase
+        const { data, error } = await supabase
+            .from('transacoes')
+            .insert([{
+                valor: parseFloat(valor),
+                categoria: categoria.trim(),
+                tipo,
+                descricao: descricao || `${tipo} - ${categoria}`,
+                user_id,
+                data: new Date().toISOString()
+            }])
+            .select();
+
+        if (error) {
+            console.error('Erro ao inserir transação:', error);
+            return res.status(500).json({
+                error: 'Erro ao registrar transação',
+                details: error.message
+            });
+        }
+
+        console.log('✅ Transação registrada via API:', data[0]);
+        res.status(201).json({
+            success: true,
+            message: 'Transação registrada com sucesso!',
+            data: data[0]
+        });
+
+    } catch (err) {
+        console.error('❌ Erro geral na API:', err);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: err.message
+        });
+    }
+});
+
+// NOVA ROTA: Listar transações via API
+app.get('/api/transacoes/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { limite = 50 } = req.query;
+
+        const { data, error } = await supabase
+            .from('transacoes')
+            .select('*')
+            .eq('user_id', userId)
+            .order('data', { ascending: false })
+            .limit(parseInt(limite));
+
+        if (error) {
+            console.error('Erro ao buscar transações:', error);
+            return res.status(500).json({
+                error: 'Erro ao buscar transações',
+                details: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            data: data || [],
+            total: data?.length || 0
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao listar transações:', err);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: err.message
+        });
+    }
+});
+
+// NOVA ROTA: Deletar transação via API
+app.delete('/api/transacoes/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { user_id } = req.body;
+
+        if (!user_id) {
+            return res.status(400).json({
+                error: 'user_id é obrigatório'
+            });
+        }
+
+        const { error } = await supabase
+            .from('transacoes')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user_id);
+
+        if (error) {
+            console.error('Erro ao deletar transação:', error);
+            return res.status(500).json({
+                error: 'Erro ao deletar transação',
+                details: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Transação deletada com sucesso!'
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao deletar transação:', err);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: err.message
+        });
+    }
+});
+
+/* 
+==============================================
+CÓDIGO TWILIO COMENTADO TEMPORARIAMENTE
+==============================================
 
 // Função normalizar texto (remove acentos e converte para minúsculo)
 function normalizarTexto(texto) {
@@ -131,265 +286,35 @@ async function listarTransacoesRecentes(userId, limite = 5) {
     }
 }
 
-// Rota para receber mensagens do Twilio
+// Rota para receber mensagens do Twilio - COMENTADA
 app.post('/whatsapp', async (req, res) => {
-    console.log('🚀 Mensagem recebida no WhatsApp');
+    console.log('🚀 Mensagem recebida no WhatsApp - FUNCIONALIDADE COMENTADA');
     
     // Criar twiml no início para estar disponível em todo escopo
-    const twiml = new MessagingResponse();
+    // const twiml = new MessagingResponse();
     
     // Configurar timeout de resposta
     res.setTimeout(10000); // 10 segundos max
 
     try {
-        const mensagem = req.body.Body;
-        const from = req.body.From;
-        
-        // Verificar se os dados básicos estão presentes
-        if (!mensagem || !from) {
-            console.error('❌ Dados obrigatórios ausentes:', { mensagem, from });
-            twiml.message('❌ Erro: dados da mensagem não recebidos corretamente.');
-            res.writeHead(200, { 'Content-Type': 'text/xml' });
-            return res.end(twiml.toString());
-        }
-
-        // Extrair userId do número do WhatsApp de forma mais robusta
-        const userId = from.replace('whatsapp:', '').replace('+', '');
-        const mensagemNormal = normalizarTexto(mensagem);
-
-        console.log(`📱 Processando mensagem de ${userId}: "${mensagem}"`);
-
-        // Comando para listar transações
-        if (mensagemNormal.includes('listar') || mensagemNormal.includes('lista') || mensagemNormal.includes('historico')) {
-            console.log('📋 Comando listar detectado');
-            const lista = await listarTransacoesRecentes(userId, 10);
-            twiml.message(lista);
-        }
-        
-        // Comando para apagar transação específica ou última
-        else if (mensagemNormal.includes('apagar') || mensagemNormal.includes('deletar')) {
-            console.log('🗑️ Comando apagar detectado');
-            // Buscar últimas transações para referência
-            const { data: transacoes, error } = await supabase
-                .from('transacoes')
-                .select('*')
-                .eq('user_id', userId)
-                .order('data', { ascending: false })
-                .limit(10);
-
-            if (error || !transacoes || transacoes.length === 0) {
-                twiml.message('❌ Nenhuma transação encontrada para apagar.');
-            } else {
-                // Verificar se é para apagar por número (apagar 1, apagar 2, etc.)
-                const numeroMatch = mensagemNormal.match(/apagar\s+(\d+)/);
-                
-                if (numeroMatch) {
-                    const indice = parseInt(numeroMatch[1]) - 1;
-                    if (indice >= 0 && indice < transacoes.length) {
-                        const transacao = transacoes[indice];
-                        const { error: deleteError } = await supabase
-                            .from('transacoes')
-                            .delete()
-                            .eq('id', transacao.id)
-                            .eq('user_id', userId);
-                            
-                        if (deleteError) {
-                            console.error('Erro ao deletar transação:', deleteError);
-                            twiml.message('❌ Erro ao apagar transação.');
-                        } else {
-                            const emoji = transacao.tipo === 'receita' ? '💚' : '💸';
-                            twiml.message(`✅ Transação ${indice + 1} apagada:\n${emoji} ${transacao.categoria}: R$ ${transacao.valor.toFixed(2)} (${transacao.tipo})`);
-                        }
-                    } else {
-                        twiml.message('❌ Número inválido. Digite "listar" para ver as transações numeradas.');
-                    }
-                }
-                // Apagar última transação
-                else if (mensagemNormal.includes('ultimo') || mensagemNormal.includes('última')) {
-                    const transacao = transacoes[0];
-                    const { error: deleteError } = await supabase
-                        .from('transacoes')
-                        .delete()
-                        .eq('id', transacao.id)
-                        .eq('user_id', userId);
-                        
-                    if (deleteError) {
-                        console.error('Erro ao deletar transação:', deleteError);
-                        twiml.message('❌ Erro ao apagar transação.');
-                    } else {
-                        const emoji = transacao.tipo === 'receita' ? '💚' : '💸';
-                        twiml.message(`✅ Última transação apagada:\n${emoji} ${transacao.categoria}: R$ ${transacao.valor.toFixed(2)} (${transacao.tipo})`);
-                    }
-                } else {
-                    twiml.message('❌ Especifique qual apagar: "apagar 1", "apagar último" ou "listar" para ver opções.');
-                }
-            }
-        }
-        
-        else if (mensagemNormal.includes('ajuda') || mensagemNormal.includes('help')) {
-            const mensagemAjuda = `🤖 *Assistente Financeiro*
-
-📝 *Registrar:*
-• "50 mercado" 
-• "100 gasolina"
-• "30 farmácia"
-• "80 loja"
-• "ganhei 500 freelance"
-• "salário 3000"
-
-📋 *Gerenciar:*
-• "listar" - ver últimas transações
-• "apagar 1" - apagar transação 1
-• "apagar último" - apagar última
-
-📊 *Ver relatórios:*
-• "relatório" / "saldo"
-• "hoje" / "semana" / "mês"
-
-🌐 *Dashboard:*
-• "dashboard" - link do painel
-
-💡 Categorias reconhecidas: mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, médico, roupas e muito mais!`;
-            twiml.message(mensagemAjuda);
-        }
-        
-        else if (mensagemNormal.includes('dashboard')) {
-            const dashboardUrl = `https://dashboard-financeiro-six.vercel.app/?user_id=${userId}`;
-            twiml.message(`🌐 *Dashboard Financeiro*\n\nSeu link pessoal:\n${dashboardUrl}\n\n📱 Melhor visualização no celular!\n\n🔗 Você pode compartilhar este link - cada pessoa terá seus próprios dados separados.`);
-        }
-        
-        else if (mensagemNormal.includes('relatorio') || mensagemNormal.includes('saldo') || 
-                  mensagemNormal.includes('hoje') || mensagemNormal.includes('semana') || 
-                  mensagemNormal.includes('mes')) {
-            
-            let filtroTempo = '';
-            let dataInicio = new Date();
-            
-            if (mensagemNormal.includes('hoje')) {
-                dataInicio.setHours(0, 0, 0, 0);
-                filtroTempo = 'hoje';
-            } else if (mensagemNormal.includes('semana')) {
-                dataInicio.setDate(dataInicio.getDate() - 7);
-                filtroTempo = 'últimos 7 dias';
-            } else if (mensagemNormal.includes('mes')) {
-                dataInicio.setMonth(dataInicio.getMonth() - 1);
-                filtroTempo = 'último mês';
-            } else {
-                dataInicio.setMonth(dataInicio.getMonth() - 3);
-                filtroTempo = 'últimos 3 meses';
-            }
-
-            const { data, error } = await supabase
-                .from('transacoes')
-                .select('*')
-                .eq('user_id', userId)
-                .gte('data', dataInicio.toISOString())
-                .order('data', { ascending: false });
-
-            if (error) {
-                console.error('Erro ao buscar transações:', error);
-                twiml.message('❌ Erro ao buscar dados. Tente novamente.');
-            } else {
-                const receitas = data.filter(t => t.tipo === 'receita');
-                const despesas = data.filter(t => t.tipo === 'despesa');
-                
-                const totalReceitas = receitas.reduce((sum, t) => sum + t.valor, 0);
-                const totalDespesas = despesas.reduce((sum, t) => sum + t.valor, 0);
-                const saldo = totalReceitas - totalDespesas;
-
-                let resumo = `📊 *Relatório (${filtroTempo})*\n\n`;
-                resumo += `💰 Saldo: R$ ${saldo.toFixed(2)}\n`;
-                resumo += `📈 Receitas: R$ ${totalReceitas.toFixed(2)}\n`;
-                resumo += `📉 Despesas: R$ ${totalDespesas.toFixed(2)}\n`;
-                resumo += `📝 Total: ${data.length} transações`;
-                
-                if (data.length > 0) {
-                    resumo += `\n\n*Últimas transações:*`;
-                    data.slice(0, 5).forEach(t => {
-                        const emoji = t.tipo === 'receita' ? '💚' : '💸';
-                        const sinal = t.tipo === 'receita' ? '+' : '-';
-                        resumo += `\n${emoji} ${t.categoria}: ${sinal}R$ ${t.valor.toFixed(2)}`;
-                    });
-                    
-                    if (data.length > 5) {
-                        resumo += `\n\n💡 Digite "listar" para ver todas`;
-                    }
-                }
-                
-                twiml.message(resumo);
-            }
-        }
-        
-        // Comando de teste para debug
-        else if (mensagemNormal.includes('teste') || mensagemNormal.includes('test')) {
-            console.log('🧪 Comando teste detectado');
-            twiml.message(`✅ *Sistema funcionando!*\n\nUserId: ${userId}\nMensagem recebida: "${mensagem}"\nHora: ${new Date().toLocaleString('pt-BR')}\n\n💡 Digite "ajuda" para ver comandos disponíveis.`);
-        }
-        
-        else {
-            console.log('💰 Tentando processar como transação financeira');
-            const dados = extrairDados(mensagem);
-            
-            if (dados && dados.valor > 0) {
-                const { data, error } = await supabase
-                    .from('transacoes')
-                    .insert([{
-                        valor: dados.valor,
-                        categoria: dados.categoria,
-                        tipo: dados.tipo,
-                        descricao: dados.descricao,
-                        user_id: userId,
-                        data: new Date().toISOString()
-                    }])
-                    .select();
-
-                if (error) {
-                    console.error('Erro ao inserir transação:', error);
-                    twiml.message('❌ Erro ao registrar transação. Tente novamente.');
-                } else {
-                    console.log('✅ Transação registrada:', data[0]);
-                    const emoji = dados.tipo === 'receita' ? '💚' : '💸';
-                    const sinal = dados.tipo === 'receita' ? '+' : '-';
-                    twiml.message(`${emoji} *Transação registrada!*\n\n${dados.categoria}: ${sinal}R$ ${dados.valor.toFixed(2)}\nTipo: ${dados.tipo}\n\n💡 Digite "listar" para ver todas ou "relatório" para resumo.`);
-                }
-            } else {
-                console.log('❌ Formato não reconhecido:', mensagem);
-                twiml.message(`❌ *Formato não reconhecido!*
-
-✅ *Exemplos corretos:*
-• "50 mercado"
-• "100 gasolina" 
-• "30 farmácia"
-• "ganhei 500 freelance"
-• "salário 3000"
-
-🏷️ *Categorias reconhecidas:*
-mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, médico, roupas e mais!
-
-💡 Digite *"ajuda"* para ver todos os comandos.`);
-            }
-        }
-
-    } catch (err) {
-        console.error('❌ Erro geral:', err);
-        twiml.message('❌ Erro interno do servidor. Tente novamente em alguns minutos.');
-    }
-
-    // Sempre enviar resposta, mesmo se houver erro
-    try {
-        console.log('📤 Enviando resposta TwiML');
-        console.log('TwiML gerado:', twiml.toString());
-        res.writeHead(200, { 'Content-Type': 'text/xml' });
-        res.end(twiml.toString());
+        res.status(503).json({
+            message: 'WhatsApp funcionalidade temporariamente desabilitada',
+            status: 'disabled'
+        });
     } catch (responseError) {
         console.error('❌ Erro ao enviar resposta:', responseError);
         res.status(500).end();
     }
 });
 
+FIM DO CÓDIGO TWILIO COMENTADO
+==============================================
+*/
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
     console.log(`🌐 Health check: http://localhost:${PORT}/`);
-    console.log(`📱 WhatsApp webhook: http://localhost:${PORT}/whatsapp`);
+    console.log(`📱 API Transações: http://localhost:${PORT}/api/transacoes`);
+    console.log(`⚠️  WhatsApp funcionalidade temporariamente desabilitada`);
 });

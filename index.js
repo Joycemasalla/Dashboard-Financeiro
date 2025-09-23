@@ -375,6 +375,7 @@ mercado, gasolina, loja, salão, farmácia, aluguel, restaurante, uber, conta, m
     }
 
     console.log('📤 Enviando resposta TwiML');
+    console.log('TwiML gerado:', twiml.toString());
     res.writeHead(200, { 'Content-Type': 'text/xml' });
     res.end(twiml.toString());
 });

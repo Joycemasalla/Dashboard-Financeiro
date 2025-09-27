@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import { Transacao } from '@/types';
+import { ChartData, ChartOptions, TooltipItem, ScriptableContext, Tick } from 'chart.js';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement);
 
@@ -153,10 +155,10 @@ export default function ResponsiveCharts({ data }: ResponsiveChartsProps) {
             tooltip: {
                 ...commonOptions.plugins.tooltip,
                 callbacks: {
-                    label: function (context: any) {
+                    label: function (context: TooltipItem<'pie'>) {
                         const label = context.label || '';
                         const value = context.parsed;
-                        const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
                         const percentage = ((value / total) * 100).toFixed(1);
                         return `${label}: R$ ${value.toFixed(2)} (${percentage}%)`;
                     }
@@ -183,10 +185,11 @@ export default function ResponsiveCharts({ data }: ResponsiveChartsProps) {
                 ticks: {
                     color: '#9ca3af',
                     font: { size: isMobile ? 10 : 11 },
-                    callback: function (value: any) {
-                        return 'R$ ' + value.toFixed(0);
+                    callback: function (value: number | string) {
+                        return 'R$ ' + Number(value).toFixed(0);
                     }
                 },
+
             },
         },
     };
@@ -326,7 +329,7 @@ export default function ResponsiveCharts({ data }: ResponsiveChartsProps) {
                                 </div>
                                 <div>
                                     <div className={`font-semibold text-sm ${(receitas.reduce((a, b) => a + b, 0) - despesas.reduce((a, b) => a + b, 0)) >= 0
-                                            ? 'text-green-400' : 'text-red-400'
+                                        ? 'text-green-400' : 'text-red-400'
                                         }`}>
                                         R$ {(receitas.reduce((a, b) => a + b, 0) - despesas.reduce((a, b) => a + b, 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </div>

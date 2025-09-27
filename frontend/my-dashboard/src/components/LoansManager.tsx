@@ -30,8 +30,8 @@ export default function LoansManager({ userId }: LoansManagerProps) {
 
   // Carregar empréstimos do localStorage (simulando banco de dados)
   useEffect(() => {
-    loadLoans();
-  }, [userId]);
+  loadLoans();
+}, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadLoans = () => {
     try {

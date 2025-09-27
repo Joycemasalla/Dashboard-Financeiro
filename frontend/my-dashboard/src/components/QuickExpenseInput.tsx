@@ -149,7 +149,7 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
         const updated = [categoria, ...currentSuggestions].slice(0, 20); // Manter apenas 20 sugestões
         localStorage.setItem('expense-suggestions', JSON.stringify(updated));
       }
-    } catch (error) {
+    } catch  {
       // Ignorar erros de localStorage
     }
   };
@@ -159,7 +159,7 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
     try {
       const stored = localStorage.getItem('expense-suggestions');
       return stored ? JSON.parse(stored) : [];
-    } catch (error) {
+    } catch  {
       return [];
     }
   };
@@ -289,7 +289,7 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              <span>Use o formato: valor categoria (ex: "40 mercado")</span>
+              <span>Use o formato: valor categoria (ex: &quot;40 mercado&quot;)</span>
             </div>
           )}
         </form>

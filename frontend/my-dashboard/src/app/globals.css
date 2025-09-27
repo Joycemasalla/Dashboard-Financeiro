@@ -25,13 +25,6 @@
   --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 * {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -43,9 +36,10 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
+  padding-bottom: 100px; /* Espaço para botões flutuantes */
 }
 
-/* Background Pattern Melhorado para Mobile */
+/* Background Pattern */
 body::before {
   content: '';
   position: fixed;
@@ -61,7 +55,7 @@ body::before {
   z-index: -1;
 }
 
-/* Scrollbar Dark Melhorado */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -79,192 +73,103 @@ body::before {
   background: var(--text-secondary);
 }
 
-/* Cards com Melhor Responsividade */
+/* Cards */
 .card-glass {
   background: rgba(20, 20, 20, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(51, 51, 51, 0.5);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
   border-radius: 1rem;
 }
 
 .card-glass:hover {
   border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.2);
 }
 
-/* Cards Compactos para Mobile */
+/* Botões Flutuantes - LAYOUT CORRIGIDO */
+.floating-buttons {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none; /* Permite cliques apenas nos botões */
+}
+
+.floating-buttons-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 100%;
+  padding: 0 20px;
+  pointer-events: none;
+}
+
+.floating-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto; /* Reativa cliques nos botões */
+  border: none;
+  cursor: pointer;
+}
+
+.floating-button:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.floating-button:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Botão de adicionar (esquerda) */
+.btn-add {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.btn-add:hover {
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+}
+
+/* Botão do WhatsApp (direita) */
+.btn-whatsapp {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  color: white;
+}
+
+.btn-whatsapp:hover {
+  box-shadow: 0 8px 30px rgba(37, 211, 102, 0.4);
+}
+
+/* Mobile */
 @media (max-width: 768px) {
-  .card-glass {
-    padding: 1rem;
-    border-radius: 0.875rem;
-    margin-bottom: 1rem;
+  body {
+    padding-bottom: 90px;
+  }
+  
+  .floating-buttons {
+    bottom: 15px;
+  }
+  
+  .floating-buttons-container {
+    padding: 0 15px;
+  }
+  
+  .floating-button {
+    width: 60px;
+    height: 60px;
   }
 }
 
-.gradient-text {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.shadow-soft {
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.shadow-glow {
-  box-shadow: 
-    0 0 40px rgba(99, 102, 241, 0.3),
-    0 0 0 1px rgba(99, 102, 241, 0.2);
-}
-
-/* Loading skeleton Melhorado */
-.skeleton {
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 0.5rem;
-}
-
-@keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Animações Otimizadas */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-}
-
-.float-animation {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes pulse-custom {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.9; }
-}
-
-.pulse-custom {
-  animation: pulse-custom 2s ease-in-out infinite;
-}
-
-/* Botões Melhorados */
-.btn-primary {
-  background: var(--gradient-primary);
-  color: white;
-  padding: 0.875rem 1.75rem;
-  border-radius: 0.875rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transform: translateY(0);
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  min-height: 44px; /* Melhora a área de toque no mobile */
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn-primary:hover::before {
-  left: 100%;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-/* Botões Secundários */
-.btn-secondary {
-  background: rgba(55, 65, 81, 0.8);
-  color: #d1d5db;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.875rem;
-  font-weight: 500;
-  border: 1px solid rgba(75, 85, 99, 0.5);
-  cursor: pointer;
-  transform: translateY(0);
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  min-height: 44px;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(55, 65, 81, 1);
-  border-color: rgba(99, 102, 241, 0.5);
-  transform: translateY(-1px);
-}
-
-/* Glass morphism melhorado */
-.glass-morphism {
-  background: rgba(20, 20, 20, 0.85);
-  backdrop-filter: blur(20px) saturate(200%);
-  -webkit-backdrop-filter: blur(20px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
-}
-
-/* Inputs melhorados com melhor UX mobile */
-input, select, textarea {
-  background: rgba(20, 20, 20, 0.9) !important;
-  border: 1px solid rgba(51, 51, 51, 0.8) !important;
-  color: var(--text-primary) !important;
-  border-radius: 0.875rem !important;
-  padding: 1rem !important;
-  transition: all 0.3s ease !important;
-  font-size: 16px !important; /* Previne zoom no iOS */
-  min-height: 44px !important; /* Melhor área de toque */
-}
-
-input:focus, select:focus, textarea:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
-  outline: none !important;
-  background: rgba(20, 20, 20, 1) !important;
-}
-
-input::placeholder {
-  color: var(--text-muted) !important;
-}
-
-/* Container principal responsivo */
+/* Container responsivo */
 .main-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -283,18 +188,11 @@ input::placeholder {
   }
 }
 
-/* Grid responsivo melhorado */
+/* Grid responsivo para stats */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
-}
-
-@media (min-width: 640px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
 }
 
 @media (min-width: 1024px) {
@@ -304,7 +202,7 @@ input::placeholder {
   }
 }
 
-/* Charts Grid Responsivo */
+/* Charts Grid - LAYOUT MOBILE CORRIGIDO */
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -318,153 +216,151 @@ input::placeholder {
   }
 }
 
-/* Melhorias específicas para mobile */
-@media (max-width: 768px) {
-  /* Scrollbar mais fino no mobile */
-  ::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  /* Padding e espaçamentos otimizados */
-  .card-glass {
-    padding: 1rem;
-    margin: 0 0 1rem 0;
-  }
-  
-  /* Botões com área de toque adequada */
-  button, .btn-primary, .btn-secondary {
-    min-height: 48px;
-    font-size: 16px !important;
-  }
-  
-  /* Headers compactos */
-  h1 {
-    font-size: 1.75rem !important;
-  }
-  
-  h2 {
-    font-size: 1.25rem !important;
-  }
-  
-  /* Espaçamentos reduzidos */
-  .space-y-6 > * + * {
-    margin-top: 1rem !important;
-  }
-  
-  /* Grid de filtros responsivo */
-  .filters-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-}
-
-@media (min-width: 640px) and (max-width: 768px) {
-  .filters-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .filters-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-  }
-}
-
-/* Neon glow effects otimizados */
-.neon-blue {
-  box-shadow: 
-    0 0 10px rgba(59, 130, 246, 0.5),
-    0 0 20px rgba(59, 130, 246, 0.3),
-    0 0 30px rgba(59, 130, 246, 0.1);
-}
-
-.neon-green {
-  box-shadow: 
-    0 0 10px rgba(34, 197, 94, 0.5),
-    0 0 20px rgba(34, 197, 94, 0.3),
-    0 0 30px rgba(34, 197, 94, 0.1);
-}
-
-.neon-red {
-  box-shadow: 
-    0 0 10px rgba(239, 68, 68, 0.5),
-    0 0 20px rgba(239, 68, 68, 0.3),
-    0 0 30px rgba(239, 68, 68, 0.1);
-}
-
-/* Stats cards com hover melhorado */
-.stat-card {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.6s;
-}
-
-.stat-card:hover::before {
-  left: 100%;
-}
-
-@media (max-width: 768px) {
-  .stat-card:active::before {
-    left: 100%;
-  }
-}
-
-/* Transaction item melhorado */
-.transaction-item {
-  position: relative;
-  border-radius: 0.875rem;
-  border: 1px solid transparent;
-  padding: 1rem;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.transaction-item:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  background: rgba(20, 20, 20, 0.8);
-  transform: translateY(-1px);
-}
-
-@media (max-width: 768px) {
-  .transaction-item {
-    padding: 0.875rem;
-  }
-  
-  .transaction-item:active {
-    transform: scale(0.98);
-  }
-}
-
-/* Chart containers otimizados */
+/* Chart containers - RESPONSIVIDADE MELHORADA */
 .chart-container {
   position: relative;
   background: rgba(20, 20, 20, 0.5);
   border-radius: 1rem;
   padding: 1rem;
   border: 1px solid rgba(51, 51, 51, 0.3);
-  min-height: 250px;
+  min-height: 300px;
+  width: 100%;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
   .chart-container {
-    min-height: 200px;
+    min-height: 250px;
     padding: 0.75rem;
+  }
+  
+  /* Força os gráficos a respeitarem o container */
+  .chart-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
   }
 }
 
-/* Delete button melhorado */
+/* Inputs melhorados */
+input, select, textarea {
+  background: rgba(20, 20, 20, 0.9) !important;
+  border: 1px solid rgba(51, 51, 51, 0.8) !important;
+  color: var(--text-primary) !important;
+  border-radius: 0.875rem !important;
+  padding: 1rem !important;
+  transition: all 0.3s ease !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  outline: none !important;
+  background: rgba(20, 20, 20, 1) !important;
+}
+
+/* Botões principais */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  min-height: 48px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+}
+
+.btn-secondary {
+  background: rgba(55, 65, 81, 0.8);
+  color: #d1d5db;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  min-height: 48px;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(55, 65, 81, 1);
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Header */
+.header-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+  border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* WhatsApp tooltip */
+.whatsapp-tooltip {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+.btn-whatsapp:hover + .whatsapp-tooltip {
+  opacity: 1;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Transações */
+.transaction-item {
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(51, 51, 51, 0.4);
+  border-radius: 0.875rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+}
+
+.transaction-item:hover {
+  background: rgba(20, 20, 20, 0.8);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Delete button */
 .delete-btn {
   padding: 0.5rem;
   border-radius: 0.5rem;
@@ -472,11 +368,12 @@ input::placeholder {
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.2);
   transition: all 0.2s ease;
-  min-height: 40px;
-  min-width: 40px;
+  min-height: 44px;
+  min-width: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .delete-btn:hover {
@@ -486,14 +383,27 @@ input::placeholder {
   transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
-  .delete-btn {
-    min-height: 44px;
-    min-width: 44px;
+/* Filtros */
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Filter tags melhorados */
+@media (min-width: 1024px) {
+  .filters-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Filter tags */
 .filter-tag {
   background: rgba(99, 102, 241, 0.2);
   color: #c7d2fe;
@@ -508,103 +418,7 @@ input::placeholder {
   min-height: 32px;
 }
 
-.filter-tag button {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  font-size: 1.2em;
-  line-height: 1;
-  min-height: 24px;
-  min-width: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.filter-tag button:hover {
-  color: #ffffff;
-}
-
-/* Header melhorado */
-.header-gradient {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
-  border-bottom: 1px solid rgba(51, 51, 51, 0.3);
-  backdrop-filter: blur(10px);
-}
-
-/* WhatsApp button otimizado */
-.whatsapp-btn {
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-  box-shadow: 
-    0 4px 16px rgba(37, 211, 102, 0.4),
-    0 0 0 1px rgba(37, 211, 102, 0.2);
-  border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 56px;
-  min-width: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.whatsapp-btn:hover {
-  transform: scale(1.1) translateY(-2px);
-  box-shadow: 
-    0 8px 24px rgba(37, 211, 102, 0.5),
-    0 0 0 1px rgba(37, 211, 102, 0.3);
-}
-
-@media (max-width: 768px) {
-  .whatsapp-btn {
-    min-height: 60px;
-    min-width: 60px;
-  }
-}
-
-/* Floating Action Buttons */
-.fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 50;
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
-@media (max-width: 768px) {
-  .fab {
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-  }
-}
-
-/* Loading states melhorados */
-.loading-spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Smooth transitions para melhor UX */
-.smooth-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Safe area para dispositivos com notch */
+/* Safe areas para dispositivos com notch */
 @supports (padding: max(0px)) {
   .safe-top {
     padding-top: max(1rem, env(safe-area-inset-top));
@@ -615,31 +429,16 @@ input::placeholder {
   }
 }
 
-/* Otimizações de performance */
-.will-change-transform {
-  will-change: transform;
-}
-
-.will-change-opacity {
-  will-change: opacity;
-}
-
-/* Melhorias de acessibilidade */
+/* Acessibilidade */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
-  .float-animation,
-  .pulse-custom,
-  .loading-spinner {
-    animation: none;
-  }
 }
 
-/* Focus states melhorados para acessibilidade */
+/* Focus states */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -647,20 +446,4 @@ textarea:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-/* Alto contraste para melhor legibilidade */
-@media (prefers-contrast: high) {
-  .card-glass {
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  .text-gray-400 {
-    color: #d1d5db !important;
-  }
-  
-  .text-gray-500 {
-    color: #9ca3af !important;
-  }
 }

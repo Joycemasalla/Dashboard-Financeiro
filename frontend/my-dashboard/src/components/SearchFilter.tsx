@@ -5,8 +5,7 @@ import { useEffect } from 'react';
 import { Transacao } from '@/types';
 
 interface SearchFilterProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
+  // Filtros existentes
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
   selectedType: string;
@@ -16,11 +15,13 @@ interface SearchFilterProps {
   categories: string[];
   data: Transacao[];
   setFilteredData: (data: Transacao[]) => void;
+  selectedLoanFilter: string;
+  setSelectedLoanFilter: (filter: string) => void;
+  // CORREÇÃO: Adiciona filteredData para exibir a contagem
+  filteredData: Transacao[];
 }
 
 export default function SearchFilter({
-  searchTerm,
-  setSearchTerm,
   selectedCategory,
   setSelectedCategory,
   selectedType,
@@ -29,34 +30,44 @@ export default function SearchFilter({
   setDateRange,
   categories,
   data,
-  setFilteredData
+  setFilteredData,
+  selectedLoanFilter,
+  setSelectedLoanFilter,
+  // CORREÇÃO: Desestrutura filteredData
+  filteredData,
 }: SearchFilterProps) {
 
   // Aplicar filtros sempre que algum parâmetro mudar
   useEffect(() => {
     let filtered = [...data];
-
-    // Filtro de busca por texto (categoria ou descrição)
-    if (searchTerm.trim()) {
-      const termo = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(t => 
-        t.categoria.toLowerCase().includes(termo) ||
-        t.descricao.toLowerCase().includes(termo) ||
-        t.tipo.toLowerCase().includes(termo)
-      );
-    }
-
-    // Filtro por categoria específica
-    if (selectedCategory) {
-      filtered = filtered.filter(t => t.categoria === selectedCategory);
-    }
+    
+    // Auxiliar para identificar transações de empréstimo
+    const isLoanCategory = (category: string) => 
+      category.toLowerCase().includes('empréstimo'); 
 
     // Filtro por tipo (receita/despesa)
     if (selectedType) {
       filtered = filtered.filter(t => t.tipo === selectedType);
     }
+    
+    // Filtro por categoria específica (aplica-se após o filtro de tipo)
+    if (selectedCategory) {
+      filtered = filtered.filter(t => t.categoria === selectedCategory);
+    }
 
-    // Filtro por período de tempo
+    // NOVO FILTRO: Empréstimos
+    if (selectedLoanFilter) {
+      switch (selectedLoanFilter) {
+        case 'loans':
+          filtered = filtered.filter(t => isLoanCategory(t.categoria));
+          break;
+        case 'non-loans':
+          filtered = filtered.filter(t => !isLoanCategory(t.categoria));
+          break;
+      }
+    }
+
+    // Filtro por período de tempo - OPÇÕES AMPLIADAS
     if (dateRange !== 'all') {
       const now = new Date();
       const startDate = new Date();
@@ -69,17 +80,19 @@ export default function SearchFilter({
           startDate.setDate(now.getDate() - 1);
           startDate.setHours(0, 0, 0, 0);
           break;
-        case 'week':
+        case 'last_7_days': // NOVO
           startDate.setDate(now.getDate() - 7);
           break;
-        case 'month':
-          startDate.setMonth(now.getMonth() - 1);
+        case 'current_month': // NOVO
+          startDate.setDate(1);
+          startDate.setHours(0, 0, 0, 0);
           break;
-        case 'quarter':
-          startDate.setMonth(now.getMonth() - 3);
+        case 'last_30_days': // NOVO
+          startDate.setDate(now.getDate() - 30);
           break;
-        case 'year':
-          startDate.setFullYear(now.getFullYear() - 1);
+        case 'current_year': // NOVO
+          startDate.setMonth(0, 1);
+          startDate.setHours(0, 0, 0, 0);
           break;
       }
 
@@ -93,27 +106,29 @@ export default function SearchFilter({
     filtered.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
     setFilteredData(filtered);
-  }, [searchTerm, selectedCategory, selectedType, dateRange, data, setFilteredData]);
+  }, [selectedCategory, selectedType, dateRange, selectedLoanFilter, data, setFilteredData]); 
 
   const clearFilters = () => {
-    setSearchTerm('');
     setSelectedCategory('');
     setSelectedType('');
     setDateRange('all');
+    setSelectedLoanFilter(''); 
   };
 
-  const hasActiveFilters = searchTerm || selectedCategory || selectedType || dateRange !== 'all';
+  // REMOVIDO: searchTerm
+  const hasActiveFilters = selectedCategory || selectedType || dateRange !== 'all' || selectedLoanFilter; 
 
+  // MUDANÇA: O campo de busca (input de texto) foi removido, a UI está focada nos selects.
   return (
     <div className="card-glass rounded-2xl p-6 shadow-soft">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-white flex items-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707v4.586A1 1 0 0110 21v-3.586a1 1 0 00-.293-.707l-6.414-6.414A1 1 0 013 6.586V4z" />
             </svg>
           </div>
-          Buscar e Filtrar
+          Filtros de Transações
         </h3>
         {hasActiveFilters && (
           <button
@@ -128,35 +143,19 @@ export default function SearchFilter({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Campo de busca melhorado */}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-            type="text"
-            placeholder="Buscar por categoria, descrição..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
-          />
-          {/* Clear button no campo de busca */}
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              <svg className="h-5 w-5 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-
-        {/* Filtro por categoria */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* FILTRO 1: Tipo (Receita/Despesa) - MANTIDO como SELECT principal */}
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className="w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
+        >
+          <option value="">Todos os tipos</option>
+          <option value="receita" className="bg-gray-800">💚 Receitas</option>
+          <option value="despesa" className="bg-gray-800">💸 Despesas</option>
+        </select>
+        
+        {/* FILTRO 2: Categoria */}
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -170,30 +169,30 @@ export default function SearchFilter({
           ))}
         </select>
 
-        {/* Filtro por tipo */}
+        {/* FILTRO 3: Empréstimos - NOVO */}
         <select
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          value={selectedLoanFilter}
+          onChange={(e) => setSelectedLoanFilter(e.target.value)}
           className="w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
         >
-          <option value="">Todos os tipos</option>
-          <option value="receita" className="bg-gray-800">💚 Receitas</option>
-          <option value="despesa" className="bg-gray-800">💸 Despesas</option>
+          <option value="">Todos (Empréstimo/Não)</option>
+          <option value="loans" className="bg-gray-800">💰 Apenas Empréstimos</option>
+          <option value="non-loans" className="bg-gray-800">🚫 Excluir Empréstimos</option>
         </select>
 
-        {/* Filtro por período expandido */}
+        {/* FILTRO 4: Período Expandido */}
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
           className="w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 focus:bg-gray-800"
         >
-          <option value="all">Todos os períodos</option>
+          <option value="all">🗓️ Todos os períodos</option>
           <option value="today" className="bg-gray-800">📅 Hoje</option>
           <option value="yesterday" className="bg-gray-800">📅 Ontem</option>
-          <option value="week" className="bg-gray-800">📅 Última semana</option>
-          <option value="month" className="bg-gray-800">📅 Último mês</option>
-          <option value="quarter" className="bg-gray-800">📅 Último trimestre</option>
-          <option value="year" className="bg-gray-800">📅 Último ano</option>
+          <option value="last_7_days" className="bg-gray-800">📅 Últimos 7 dias</option>
+          <option value="last_30_days" className="bg-gray-800">📅 Últimos 30 dias</option>
+          <option value="current_month" className="bg-gray-800">📅 Mês atual</option>
+          <option value="current_year" className="bg-gray-800">📅 Ano atual</option>
         </select>
       </div>
 
@@ -203,30 +202,10 @@ export default function SearchFilter({
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-gray-300">Filtros ativos:</span>
             <span className="text-xs text-gray-400">
-              {data.length} total → {data.filter(t => {
-                let passes = true;
-                if (searchTerm.trim()) passes = passes && (t.categoria.toLowerCase().includes(searchTerm.toLowerCase()) || t.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
-                if (selectedCategory) passes = passes && t.categoria === selectedCategory;
-                if (selectedType) passes = passes && t.tipo === selectedType;
-                return passes;
-              }).length} filtradas
+              {data.length} total → {filteredData.length} filtradas
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {searchTerm && (
-              <span className="filter-tag">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Busca: &quot;{searchTerm}&quot;
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="ml-1 hover:text-white"
-                >
-                  ×
-                </button>
-              </span>
-            )}
             {selectedCategory && (
               <span className="filter-tag">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,6 +234,20 @@ export default function SearchFilter({
                 </button>
               </span>
             )}
+            {selectedLoanFilter && (
+              <span className="filter-tag">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {selectedLoanFilter === 'loans' ? 'Apenas Empréstimos' : 'Excluir Empréstimos'}
+                <button
+                  onClick={() => setSelectedLoanFilter('')}
+                  className="ml-1 hover:text-white"
+                >
+                  ×
+                </button>
+              </span>
+            )}
             {dateRange !== 'all' && (
               <span className="filter-tag">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,9 +255,10 @@ export default function SearchFilter({
                 </svg>
                 {dateRange === 'today' ? 'Hoje' : 
                  dateRange === 'yesterday' ? 'Ontem' :
-                 dateRange === 'week' ? 'Semana' : 
-                 dateRange === 'month' ? 'Mês' : 
-                 dateRange === 'quarter' ? 'Trimestre' : 'Ano'}
+                 dateRange === 'last_7_days' ? 'Últimos 7 dias' :
+                 dateRange === 'last_30_days' ? 'Últimos 30 dias' :
+                 dateRange === 'current_month' ? 'Mês atual' : 
+                 dateRange === 'current_year' ? 'Ano atual' : 'Período'}
                 <button
                   onClick={() => setDateRange('all')}
                   className="ml-1 hover:text-white"

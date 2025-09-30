@@ -115,28 +115,24 @@ body::before {
 }
 
 /* Stacking Order - Mobile (right: 1rem) */
-.floating-button-whatsapp {
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-  color: white;
-  bottom: 1rem; /* Posição 1 (Mais baixo) */
-}
+/* .floating-button-whatsapp está vazio e foi removido */
 
 .floating-button-quick-expense {
   background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); /* Amarelo/Aviso */
   color: white;
-  bottom: 5.5rem; /* Posição 2 (4.5rem de distância + margin) */
+  bottom: 1rem; /* Posição 1 (Mais baixo, já que o WhatsApp está comentado) */
 }
 
 .floating-button-loans {
   background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); /* Roxo/Accent */
   color: white;
-  bottom: 10rem; /* Posição 3 */
+  bottom: 5.5rem; /* Posição 2 */
 }
 
 .floating-button-add {
   background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%); /* Azul/Primary */
   color: white;
-  bottom: 14.5rem; /* Posição 4 (Mais alto) */
+  bottom: 10rem; /* Posição 3 (Mais alto) */
 }
 
 /* Mobile */
@@ -161,20 +157,18 @@ body::before {
   }
 
   /* Stacking Order - Desktop (right: 1.5rem) */
-  .floating-button-whatsapp {
+  /* .floating-button-whatsapp está vazio e foi removido */
+
+  .floating-button-quick-expense {
     bottom: 1.5rem; 
   }
 
-  .floating-button-quick-expense {
+  .floating-button-loans {
     bottom: 6rem; 
   }
 
-  .floating-button-loans {
-    bottom: 10.5rem; 
-  }
-
   .floating-button-add {
-    bottom: 15rem; 
+    bottom: 10.5rem; 
   }
 }
 

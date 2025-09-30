@@ -9,6 +9,7 @@ import SearchFilter from './SearchFilter';
 import AddTransactionForm from './AddTransactionForm';
 import QuickExpenseInput from './QuickExpenseInput';
 import LoansManager from './LoansManager';
+import TransactionDetailModal from './TransactionDetailModal'; // NOVO COMPONENTE
 import { supabase } from '../lib/supabaseClient';
 
 // Carregamento dinâmico dos gráficos
@@ -34,12 +35,12 @@ type DashboardClientProps = {
 export default function DashboardClient({ transacoes, userId }: DashboardClientProps) {
   const [data, setData] = useState(transacoes);
   const [filteredData, setFilteredData] = useState(transacoes);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [dateRange, setDateRange] = useState('all');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  // Removido o estado showQuickInput, pois o QuickExpenseInput agora gerencia sua própria expansão/FAB.
+  const [selectedLoanFilter, setSelectedLoanFilter] = useState('');
+  const [selectedTransaction, setSelectedTransaction] = useState<Transacao | null>(null);
 
   useEffect(() => {
     setData(transacoes);
@@ -77,6 +78,22 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
       }
     }
   };
+
+  // Ação de clique no StatCard
+  const handleStatCardClick = (type: 'receita' | 'despesa') => {
+    // 1. Limpa outros filtros
+    setSelectedCategory('');
+    setDateRange('all');
+    setSelectedLoanFilter('');
+    // 2. Define o filtro de tipo
+    setSelectedType(type);
+    // 3. Rola para a seção de transações (opcional, mas recomendado para UX)
+    const listElement = document.getElementById('transaction-list');
+    if (listElement) {
+      listElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
 
   // Estatísticas calculadas
   const stats = useMemo(() => {
@@ -131,7 +148,6 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
               <p className="text-gray-400 text-sm mb-3">
                 Digite apenas &quot;40 mercado&quot; e pronto! Sua despesa está registrada.              
               </p>
-              {/* Ajustado a mensagem para indicar que o campo está abaixo/visível */}
               <p className="text-blue-400 text-sm font-medium">
                 Digite no campo que apareceu abaixo →
               </p>
@@ -155,11 +171,13 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
         </div>
 
         {/* Componentes necessários para modais/FABs no estado vazio */}
-        {/* QuickExpenseInput é renderizado expandido para melhor UX no primeiro acesso */}
         <QuickExpenseInput userId={userId} onSuccess={handleTransactionAdded} initialExpanded={true} />
-        {/* Os outros modais (e seus FABs) também precisam ser renderizados */}
         <AddTransactionForm userId={userId} onSuccess={handleTransactionAdded} />
         <LoansManager userId={userId} />
+        <TransactionDetailModal 
+          transaction={selectedTransaction} 
+          onClose={() => setSelectedTransaction(null)} 
+        />
       </div>
     );
   }
@@ -175,6 +193,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
             icon="trending-up"
             color="success"
             change="+12%"
+            onClick={() => handleStatCardClick('receita')} // Ação de clique
           />
           <StatCard
             title="Despesas"
@@ -182,6 +201,7 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
             icon="trending-down"
             color="danger"
             change="+5%"
+            onClick={() => handleStatCardClick('despesa')} // Ação de clique
           />
           <StatCard
             title="Saldo"
@@ -201,8 +221,6 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
 
         {/* Filtros e Busca */}
         <SearchFilter
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
           selectedType={selectedType}
@@ -212,13 +230,16 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
           categories={categories}
           data={data}
           setFilteredData={setFilteredData}
+          selectedLoanFilter={selectedLoanFilter}
+          setSelectedLoanFilter={setSelectedLoanFilter}
+          filteredData={filteredData} // CORREÇÃO: Passando filteredData
         />
 
         {/* Gráficos Responsivos */}
         <ResponsiveCharts data={filteredData} />
 
         {/* Lista de Transações */}
-        <div className="card-glass rounded-2xl p-4 md:p-6 shadow-soft">
+        <div id="transaction-list" className="card-glass rounded-2xl p-4 md:p-6 shadow-soft">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg md:text-xl font-semibold text-white flex items-center">
               <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
@@ -245,7 +266,8 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
               {filteredData.slice(0, 100).map((transacao: Transacao) => (
                 <div
                   key={transacao.id}
-                  className="transaction-item flex items-center justify-between"
+                  className="transaction-item flex items-center justify-between cursor-pointer"
+                  onClick={() => setSelectedTransaction(transacao)} // Abre modal
                 >
                   <div className="flex items-center space-x-3 md:space-x-4 flex-1 min-w-0">
                     {/* Ícone */}
@@ -285,14 +307,6 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
                         <span>
                           {new Date(transacao.data).toLocaleDateString('pt-BR')}
                         </span>
-                        {transacao.descricao && transacao.descricao !== transacao.categoria && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate max-w-32 md:max-w-48">
-                              {transacao.descricao}
-                            </span>
-                          </>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -308,9 +322,9 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
                       </span>
                     </div>
 
-                    {/* Botão de deletar */}
+                    {/* Botão de deletar - Usa stopPropagation para não abrir o modal */}
                     <button
-                      onClick={() => handleDelete(transacao.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(transacao.id); }} // Impedir que o clique no botão ative o clique da div pai
                       disabled={isDeleting === transacao.id}
                       className={`delete-btn ${isDeleting === transacao.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                       title="Deletar transação"
@@ -346,6 +360,12 @@ export default function DashboardClient({ transacoes, userId }: DashboardClientP
       <AddTransactionForm userId={userId} onSuccess={handleTransactionAdded} />
       <LoansManager userId={userId} />
       <QuickExpenseInput userId={userId} onSuccess={handleTransactionAdded} />
+
+      {/* NOVO: Modal de detalhes da transação */}
+      <TransactionDetailModal 
+        transaction={selectedTransaction} 
+        onClose={() => setSelectedTransaction(null)} 
+      />
     </>
   );
 }

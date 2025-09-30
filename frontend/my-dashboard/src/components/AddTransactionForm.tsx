@@ -139,7 +139,6 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
     return (
       <button
         onClick={() => setIsOpen(true)}
-        // MUDANÇA: Usar as classes padronizadas de FAB
         className={`floating-button-base floating-button-add will-change-transform`}
         aria-label="Adicionar nova transação"
       >
@@ -228,7 +227,8 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
                 placeholder="0,00"
                 value={formData.valor}
                 onChange={(e) => handleValorChange(e.target.value)}
-                className="w-full pl-14 pr-4 py-4 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                // CORREÇÃO: Aumentado o pl de 14 para 16 para evitar sobreposição do 'R$' com o texto
+                className="w-full pl-16 pr-4 py-4 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
                 required
                 disabled={isLoading}
                 inputMode="decimal"

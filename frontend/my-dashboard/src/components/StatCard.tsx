@@ -7,6 +7,8 @@ interface StatCardProps {
   icon: string;
   color: 'primary' | 'success' | 'danger' | 'warning';
   change?: string;
+  // NOVO: Adiciona prop onClick
+  onClick?: () => void;
 }
 
 const iconMap = {
@@ -59,12 +61,16 @@ const colorMap = {
   }
 };
 
-export default function StatCard({ title, value, icon, color, change }: StatCardProps) {
+// MUDANÇA: Adiciona onClick e torna o cartão um elemento interativo
+export default function StatCard({ title, value, icon, color, change, onClick }: StatCardProps) {
   const colorClass = colorMap[color];
   const IconComponent = iconMap[icon as keyof typeof iconMap];
 
   return (
-    <div className={`stat-card card-glass rounded-2xl p-4 md:p-6 shadow-soft hover:shadow-glow hover:${colorClass.glow} transition-all duration-300 transform hover:-translate-y-1 border border-gray-700/50`}>
+    <div 
+      className={`stat-card card-glass rounded-2xl p-4 md:p-6 shadow-soft hover:shadow-glow hover:${colorClass.glow} transition-all duration-300 transform hover:-translate-y-1 border border-gray-700/50 ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-r ${colorClass.bg} ${colorClass.text} flex items-center justify-center shadow-lg`}>
           {IconComponent}

@@ -24,7 +24,7 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -49,7 +49,7 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
 
     try {
       const valor = parseFloat(formData.valor.replace(',', '.'));
-      
+
       if (!valor || valor <= 0) {
         alert('Por favor, insira um valor válido maior que zero');
         return;
@@ -84,10 +84,10 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
           tipo: 'despesa',
           descricao: ''
         });
-        
+
         setIsOpen(false);
         onSuccess();
-        
+
         // Feedback visual melhorado
         const emoji = formData.tipo === 'receita' ? '💚' : '💸';
         const notification = document.createElement('div');
@@ -102,7 +102,7 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
           </div>
         `;
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
           notification.classList.add('translate-x-full', 'opacity-0');
           setTimeout(() => notification.remove(), 300);
@@ -123,20 +123,24 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
   };
 
   const handleValorChange = (value: string) => {
-    // Permitir apenas números, vírgula e ponto, limitando a 2 casas decimais
-    const cleaned = value.replace(/[^0-9.,]/g, '');
-    const formatted = cleaned.replace(/^0+/, '') || '0';
-    setFormData({ ...formData, valor: formatted });
-  };
+    // Aceitar números, vírgula e ponto - limitar a 2 casas decimais
+    let cleaned = value.replace(/[^0-9.,]/g, '');
 
+    // Permitir apenas uma vírgula ou ponto
+    const separatorCount = (cleaned.match(/[.,]/g) || []).length;
+    if (separatorCount > 1) {
+      cleaned = cleaned.slice(0, cleaned.lastIndexOf(cleaned.match(/[.,]/g)![separatorCount - 1]));
+    }
+
+    setFormData({ ...formData, valor: cleaned });
+  };
   // Botão FAB
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fab bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:scale-110 transform transition-all duration-300 shadow-2xl ${
-          isMobile ? 'bottom-20' : 'bottom-24'
-        } will-change-transform`}
+        className={`fab bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:scale-110 transform transition-all duration-300 shadow-2xl ${isMobile ? 'bottom-20' : 'bottom-24'
+          } will-change-transform`}
         aria-label="Adicionar nova transação"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,11 +152,10 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4">
-      <div className={`bg-gray-900 shadow-2xl w-full border-gray-700 ${
-        isMobile 
-          ? 'rounded-t-3xl max-h-[85vh] overflow-y-auto' 
+      <div className={`bg-gray-900 shadow-2xl w-full border-gray-700 ${isMobile
+          ? 'rounded-t-3xl max-h-[85vh] overflow-y-auto'
           : 'rounded-2xl max-w-lg border'
-      }`}>
+        }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-700 sticky top-0 bg-gray-900 z-10">
           <h2 className="text-xl md:text-2xl font-bold text-white flex items-center">
@@ -183,11 +186,10 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, tipo: 'despesa', categoria: '' })}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center space-y-2 min-h-[80px] ${
-                  formData.tipo === 'despesa'
+                className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center space-y-2 min-h-[80px] ${formData.tipo === 'despesa'
                     ? 'border-red-500 bg-red-500/20 text-red-300'
                     : 'border-gray-600 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:bg-gray-700/50'
-                }`}
+                  }`}
                 disabled={isLoading}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,11 +201,10 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, tipo: 'receita', categoria: '' })}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center space-y-2 min-h-[80px] ${
-                  formData.tipo === 'receita'
+                className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center space-y-2 min-h-[80px] ${formData.tipo === 'receita'
                     ? 'border-green-500 bg-green-500/20 text-green-300'
                     : 'border-gray-600 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:bg-gray-700/50'
-                }`}
+                  }`}
                 disabled={isLoading}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +256,7 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
                 disabled={isLoading}
                 list="categorias"
               />
-              
+
               {/* Sugestões de categorias organizadas */}
               <div className="bg-gray-800/30 rounded-xl p-4">
                 <p className="text-xs text-gray-400 mb-3 font-medium">
@@ -267,11 +268,10 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
                       key={cat}
                       type="button"
                       onClick={() => handleCategoriaChange(cat)}
-                      className={`text-sm text-left px-3 py-2 rounded-lg transition-all duration-200 ${
-                        formData.categoria.toLowerCase() === cat
+                      className={`text-sm text-left px-3 py-2 rounded-lg transition-all duration-200 ${formData.categoria.toLowerCase() === cat
                           ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                           : 'text-gray-400 hover:text-white hover:bg-gray-700/50 border border-transparent'
-                      }`}
+                        }`}
                       disabled={isLoading}
                     >
                       {cat}
@@ -310,13 +310,12 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
             <button
               type="submit"
               disabled={isLoading || !formData.valor || !formData.categoria}
-              className={`flex-1 px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center ${
-                isLoading || !formData.valor || !formData.categoria
+              className={`flex-1 px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center ${isLoading || !formData.valor || !formData.categoria
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                   : formData.tipo === 'receita'
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-green-500/25 hover:scale-105'
-                  : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-red-500/25 hover:scale-105'
-              } transform will-change-transform`}
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-green-500/25 hover:scale-105'
+                    : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-red-500/25 hover:scale-105'
+                } transform will-change-transform`}
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
@@ -341,11 +340,10 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
             <p className="text-xs text-gray-400 mb-2 font-medium">Preview da transação:</p>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  formData.tipo === 'receita'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${formData.tipo === 'receita'
                     ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                }`}>
+                  }`}>
                   {formData.tipo === 'receita' ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
@@ -365,9 +363,8 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
                   </p>
                 </div>
               </div>
-              <span className={`font-bold ${
-                formData.tipo === 'receita' ? 'text-green-400' : 'text-red-400'
-              }`}>
+              <span className={`font-bold ${formData.tipo === 'receita' ? 'text-green-400' : 'text-red-400'
+                }`}>
                 {formData.tipo === 'receita' ? '+' : '-'}R$ {formData.valor ? parseFloat(formData.valor.replace(',', '.')).toFixed(2) : '0,00'}
               </span>
             </div>
@@ -382,8 +379,8 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
 
       {/* Overlay para fechar no mobile */}
       {isMobile && (
-        <div 
-          className="absolute inset-0 -z-10" 
+        <div
+          className="absolute inset-0 -z-10"
           onClick={() => !isLoading && setIsOpen(false)}
         />
       )}

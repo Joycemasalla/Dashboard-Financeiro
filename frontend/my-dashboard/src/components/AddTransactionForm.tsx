@@ -139,8 +139,8 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fab bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:scale-110 transform transition-all duration-300 shadow-2xl ${isMobile ? 'bottom-20' : 'bottom-24'
-          } will-change-transform`}
+        // MUDANÇA: Usar as classes padronizadas de FAB
+        className={`floating-button-base floating-button-add will-change-transform`}
         aria-label="Adicionar nova transação"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

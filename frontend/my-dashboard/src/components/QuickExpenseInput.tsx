@@ -6,12 +6,13 @@ import { useState } from 'react';
 interface QuickExpenseInputProps {
   userId: string;
   onSuccess: () => void;
+  initialExpanded?: boolean; // NOVO PROP
 }
 
-export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInputProps) {
+export default function QuickExpenseInput({ userId, onSuccess, initialExpanded = false }: QuickExpenseInputProps) {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initialExpanded); // USAR O NOVO PROP
 
   const examples = ['40 mercado', '25 uber', '15,50 lanche', '2,50 água', '20,33 café'];
 
@@ -90,7 +91,8 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="fixed bottom-20 right-4 z-50 w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform"
+        // MUDANÇA: Usar as classes padronizadas de FAB
+        className="floating-button-base floating-button-quick-expense shadow-2xl"
         title="Registro Rápido"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

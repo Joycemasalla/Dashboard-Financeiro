@@ -36,7 +36,7 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
-  padding-bottom: 100px; /* Espaço para botões flutuantes */
+  padding-bottom: 120px; /* Espaço AUMENTADO para botões flutuantes empilhados */
 }
 
 /* Background Pattern */
@@ -87,26 +87,8 @@ body::before {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.2);
 }
 
-/* Botões Flutuantes - LAYOUT CORRIGIDO */
-.floating-buttons {
-  position: fixed;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  pointer-events: none; /* Permite cliques apenas nos botões */
-}
-
-.floating-buttons-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 100%;
-  padding: 0 20px;
-  pointer-events: none;
-}
-
-.floating-button {
+/* Botões Flutuantes (FAB) CONSOLIDADOS */
+.floating-button-base {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -118,54 +100,81 @@ body::before {
   pointer-events: auto; /* Reativa cliques nos botões */
   border: none;
   cursor: pointer;
+  position: fixed; /* Deve ser fixed */
+  right: 1rem; /* Posição padrão para mobile */
+  z-index: 40;
 }
 
-.floating-button:hover {
-  transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+.floating-button-base:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.05); /* Efeito de ripple sutil */
 }
 
-.floating-button:active {
-  transform: translateY(0) scale(0.95);
+.floating-button-base:active {
+  transform: scale(0.95);
 }
 
-/* Botão de adicionar (esquerda) */
-.btn-add {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: white;
-}
-
-.btn-add:hover {
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
-}
-
-/* Botão do WhatsApp (direita) */
-.btn-whatsapp {
+/* Stacking Order - Mobile (right: 1rem) */
+.floating-button-whatsapp {
   background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
   color: white;
+  bottom: 1rem; /* Posição 1 (Mais baixo) */
 }
 
-.btn-whatsapp:hover {
-  box-shadow: 0 8px 30px rgba(37, 211, 102, 0.4);
+.floating-button-quick-expense {
+  background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); /* Amarelo/Aviso */
+  color: white;
+  bottom: 5.5rem; /* Posição 2 (4.5rem de distância + margin) */
+}
+
+.floating-button-loans {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); /* Roxo/Accent */
+  color: white;
+  bottom: 10rem; /* Posição 3 */
+}
+
+.floating-button-add {
+  background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%); /* Azul/Primary */
+  color: white;
+  bottom: 14.5rem; /* Posição 4 (Mais alto) */
 }
 
 /* Mobile */
 @media (max-width: 768px) {
   body {
-    padding-bottom: 90px;
+    padding-bottom: 110px;
   }
   
-  .floating-buttons {
-    bottom: 15px;
+  .floating-button-base {
+    width: 56px;
+    height: 56px;
+    right: 1rem;
   }
-  
-  .floating-buttons-container {
-    padding: 0 15px;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .floating-button-base {
+    width: 64px;
+    height: 64px;
+    right: 1.5rem;
   }
-  
-  .floating-button {
-    width: 60px;
-    height: 60px;
+
+  /* Stacking Order - Desktop (right: 1.5rem) */
+  .floating-button-whatsapp {
+    bottom: 1.5rem; 
+  }
+
+  .floating-button-quick-expense {
+    bottom: 6rem; 
+  }
+
+  .floating-button-loans {
+    bottom: 10.5rem; 
+  }
+
+  .floating-button-add {
+    bottom: 15rem; 
   }
 }
 

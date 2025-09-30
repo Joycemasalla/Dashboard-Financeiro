@@ -18,12 +18,12 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
   const parseExpenseText = (text: string) => {
     const cleanText = text.trim().toLowerCase();
     const match = cleanText.match(/^(\d+(?:[.,]\d{1,2})?)\s+(.+)$/);
-    
+
     if (!match) return null;
 
     const [, valorStr, categoria] = match;
     const valor = parseFloat(valorStr.replace(',', '.'));
-    
+
     if (isNaN(valor) || valor <= 0) return null;
 
     return {
@@ -38,9 +38,9 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
     if (!inputText.trim()) return;
 
     const parsedData = parseExpenseText(inputText);
-    
+
     if (!parsedData) {
-      alert('Formato inválido! Use: valor categoria\nExemplo: "40 mercado" ou "15,50 lanche"');
+      alert('Formato inválido! Use: valor categoria\nExemplo: 40 mercado ou 15,50 lanche');
       return;
     }
 
@@ -59,8 +59,7 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
         setInputText('');
         setIsExpanded(false);
         onSuccess();
-        
-        // Notificação visual
+
         const notification = document.createElement('div');
         notification.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-[9999] max-w-sm';
         notification.innerHTML = `
@@ -87,7 +86,6 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
 
   const previewData = parseExpenseText(inputText);
 
-  // Botão compacto
   if (!isExpanded) {
     return (
       <button
@@ -102,11 +100,9 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
     );
   }
 
-  // Painel expandido
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 bg-gray-900/98 backdrop-blur-lg border-t border-gray-700 shadow-2xl" style={{ paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}>
       <div className="max-w-4xl mx-auto p-4 space-y-3">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
@@ -116,7 +112,7 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
             </div>
             <h3 className="font-semibold text-white text-sm">Registro Rápido</h3>
           </div>
-          
+
           {previewData && (
             <div className="flex items-center space-x-2 text-xs">
               <span className="text-gray-400">Preview:</span>
@@ -124,7 +120,7 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
               <span className="text-gray-300">{previewData.categoria}</span>
             </div>
           )}
-          
+
           <button onClick={() => setIsExpanded(false)} className="text-gray-400 hover:text-white p-1">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -132,7 +128,6 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
           </button>
         </div>
 
-        {/* Input */}
         <div className="relative">
           <input
             type="text"
@@ -144,13 +139,12 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
             disabled={isLoading}
             autoFocus
           />
-          
+
           <button
             onClick={handleSubmit}
             disabled={isLoading || !previewData}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-              isLoading || !previewData ? 'bg-gray-600 text-gray-400' : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isLoading || !previewData ? 'bg-gray-600 text-gray-400' : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -162,7 +156,6 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
           </button>
         </div>
 
-        {/* Exemplos */}
         {!inputText.trim() && (
           <div className="bg-gray-800/30 rounded-lg p-3">
             <p className="text-xs text-gray-400 mb-2">Exemplos de uso:</p>
@@ -181,13 +174,12 @@ export default function QuickExpenseInput({ userId, onSuccess }: QuickExpenseInp
           </div>
         )}
 
-        {/* Validação */}
         {inputText.trim() && !previewData && (
           <div className="flex items-center space-x-2 text-xs text-yellow-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
             </svg>
-            <span>Use: valor categoria (ex: "40 mercado")</span>
+            <span>Use: valor categoria (ex: &quot;40 mercado&quot;)</span>
           </div>
         )}
       </div>

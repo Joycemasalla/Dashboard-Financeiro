@@ -5,8 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import { Transacao } from '@/types';
-import { ChartData, ChartOptions, TooltipItem, ScriptableContext, Tick } from 'chart.js';
-
+import { TooltipItem } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement);
 

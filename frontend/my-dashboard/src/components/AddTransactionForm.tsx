@@ -220,7 +220,7 @@ export default function AddTransactionForm({ userId, onSuccess }: AddTransaction
             <label className="block text-sm font-medium text-gray-300 mb-3">Valor</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-gray-400 font-medium">R$</span>
+                <span className="text-gray-400 font-medium"></span>
               </div>
               <input
                 type="text"

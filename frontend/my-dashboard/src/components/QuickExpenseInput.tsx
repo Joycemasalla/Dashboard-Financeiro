@@ -6,19 +6,36 @@ import { useState } from 'react';
 interface QuickExpenseInputProps {
   userId: string;
   onSuccess: () => void;
-  initialExpanded?: boolean; // NOVO PROP
+  initialExpanded?: boolean; 
 }
 
 export default function QuickExpenseInput({ userId, onSuccess, initialExpanded = false }: QuickExpenseInputProps) {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(initialExpanded); // USAR O NOVO PROP
+  const [isExpanded, setIsExpanded] = useState(initialExpanded); 
 
-  const examples = ['40 mercado', '25 uber', '15,50 lanche', '2,50 água', '20,33 café'];
+  // EXEMPLOS ATUALIZADOS para incluir Receita
+  const examples = ['40 mercado', '+100 salário', '25 uber', '15,50 lanche', '+50 venda'];
 
   const parseExpenseText = (text: string) => {
-    const cleanText = text.trim().toLowerCase();
-    const match = cleanText.match(/^(\d+(?:[.,]\d{1,2})?)\s+(.+)$/);
+    const cleanText = text.trim();
+    
+    // 1. Detecta o tipo e remove o sinal, se houver.
+    let tipo: 'receita' | 'despesa' = 'despesa';
+    let normalizedText = cleanText;
+
+    // Se começar com '+', é Receita. Remove o sinal para extrair o valor.
+    if (cleanText.startsWith('+')) {
+      tipo = 'receita';
+      normalizedText = cleanText.substring(1).trim();
+    } else if (cleanText.startsWith('-')) {
+      // Se começar com '-', é Despesa. Remove o sinal.
+      normalizedText = cleanText.substring(1).trim();
+    }
+    // Se não tiver sinal, assume o padrão 'despesa' e usa o texto original/limpo.
+    
+    // 2. Procura por (valor) + (espaço) + (categoria)
+    const match = normalizedText.match(/^(\d+(?:[.,]\d{1,2})?)\s+(.+)$/i);
 
     if (!match) return null;
 
@@ -27,11 +44,13 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
 
     if (isNaN(valor) || valor <= 0) return null;
 
+    const descricaoPrefix = (tipo === 'receita') ? 'Receita rápida:' : 'Despesa rápida:';
+
     return {
       valor,
-      categoria: categoria.trim(),
-      tipo: 'despesa' as const,
-      descricao: `Despesa rápida: ${categoria}`
+      categoria: categoria.trim().toLowerCase(),
+      tipo: tipo,
+      descricao: `${descricaoPrefix} ${categoria}`
     };
   };
 
@@ -41,7 +60,7 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
     const parsedData = parseExpenseText(inputText);
 
     if (!parsedData) {
-      alert('Formato inválido! Use: valor categoria\nExemplo: 40 mercado ou 15,50 lanche');
+      alert('Formato inválido! Use: valor categoria ou +valor categoria\nExemplo: 40 mercado ou +100 salário');
       return;
     }
 
@@ -61,14 +80,15 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
         setIsExpanded(false);
         onSuccess();
 
+        const emoji = parsedData.tipo === 'receita' ? '💚' : '💸';
         const notification = document.createElement('div');
         notification.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-[9999] max-w-sm';
         notification.innerHTML = `
           <div class="flex items-center space-x-3">
-            <span class="text-xl">✅</span>
+            <span class="text-xl">${emoji}</span>
             <div>
-              <p class="font-semibold text-sm">Despesa registrada!</p>
-              <p class="text-xs opacity-90">${parsedData.categoria}: R$ ${parsedData.valor.toFixed(2)}</p>
+              <p class="font-semibold text-sm">Transação registrada!</p>
+              <p class="text-xs opacity-90">${parsedData.categoria}: ${parsedData.tipo === 'receita' ? '+' : '-'}R$ ${parsedData.valor.toFixed(2)}</p>
             </div>
           </div>
         `;
@@ -91,7 +111,6 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        // MUDANÇA: Usar as classes padronizadas de FAB
         className="floating-button-base floating-button-quick-expense shadow-2xl"
         title="Registro Rápido"
       >
@@ -118,7 +137,9 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
           {previewData && (
             <div className="flex items-center space-x-2 text-xs">
               <span className="text-gray-400">Preview:</span>
-              <span className="text-red-400 font-medium">R$ {previewData.valor.toFixed(2)}</span>
+              <span className={`${previewData.tipo === 'receita' ? 'text-green-400' : 'text-red-400'} font-medium`}>
+                {previewData.tipo === 'receita' ? '+' : '-'}R$ {previewData.valor.toFixed(2)}
+              </span>
               <span className="text-gray-300">{previewData.categoria}</span>
             </div>
           )}
@@ -136,7 +157,7 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            placeholder="Ex: 40 mercado, 15,50 lanche, 2,50 água..."
+            placeholder="Ex: 40 mercado, +100 salário, 15,50 lanche..."
             className="w-full px-4 py-3 pr-14 bg-gray-800/80 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 text-base"
             disabled={isLoading}
             autoFocus
@@ -181,7 +202,7 @@ export default function QuickExpenseInput({ userId, onSuccess, initialExpanded =
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
             </svg>
-            <span>Use: valor categoria (ex: &quot;40 mercado&quot;)</span>
+            <span>Use: [+/-]valor categoria (ex: &quot;40 mercado&quot; ou &quot;+100 salário&quot;)</span>
           </div>
         )}
       </div>
